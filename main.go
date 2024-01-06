@@ -14,6 +14,7 @@ import (
 
 	_ "github.com/joho/godotenv/autoload"
 
+	_ "github.com/eminetto/mongo-migrate"
 	_ "go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	_ "go.mongodb.org/mongo-driver/mongo"
@@ -23,10 +24,12 @@ import (
 )
 
 type User struct {
-	Name     string `bson:"name"`
-	Username string `bson:"username"`
-	Email    string `bson:"email"`
-	Password string `bson:"password"`
+	Name       string `bson:"name"`
+	Username   string `bson:"username"`
+	Email      string `bson:"email"`
+	Password   string `bson:"password"`
+	Created_at time.Time
+	Updated_at time.Time
 }
 
 const uri = "mongodb+srv://ataytoleuov:abylai220439@abylaidb.3jyfmar.mongodb.net/"
@@ -46,9 +49,8 @@ func main() {
 	}
 
 	// Create context with a timeout
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
-
 	// Connect to MongoDB
 	err = client.Connect(ctx)
 	if err != nil {
@@ -62,6 +64,9 @@ func main() {
 	}
 
 	fmt.Println("Connected to MongoDB Atlas!")
+
+	// Define the migration
+	// Perform your migration task, e.g., add an index or update documents
 
 	http.HandleFunc("/", homeHandler)
 	http.HandleFunc("/submit", submitHandler)
@@ -130,10 +135,12 @@ func insertData(u User) {
 
 func getData(name string, email string, username string, password string) User {
 	user := User{
-		Name:     name,
-		Email:    email,
-		Username: username,
-		Password: password,
+		Name:       name,
+		Email:      email,
+		Username:   username,
+		Password:   password,
+		Created_at: time.Now(),
+		Updated_at: time.Now(),
 	}
 	return user
 }
