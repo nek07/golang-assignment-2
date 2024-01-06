@@ -1,0 +1,39 @@
+
+body {
+    display: flex;
+    margin: 0;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    font-family: sans-serif;
+}
+
+#error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: auto;
+    width: 60%;
+    margin-top: -10%;
+}
+button {
+    color:white;
+    background-color: cornflowerblue;
+    width: auto;
+    padding: 10px 20px;
+    border-radius: 15px;
+    border-color: cornflowerblue;
+    font-size: 1.1em;
+    margin-top: 1.1em;
+    
+}
+
+#text {
+    font-size: 1.1em;
+    
+}
+
+h1 {
+    font-size: 3em;
+}
