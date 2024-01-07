@@ -3,14 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Error Page</title>
     <link rel="stylesheet" href="design/style.css">
 </head>
 <body>
     <div id="error">
-        <h1>Ошибка 404</h1>
-        <p id="text">Ой, что-то пошло не так! Страница, которую вы ищете, пропала в цифровых дебрях. Код ошибки 404 говорит о том, что сервер не может найти запрашиваемый ресурс. Вернитесь на главную или воспользуйтесь поиском для продолжения путешествия по сайту.</p>
-        <button>Вернуться на главную страницу</button>
+        <h1>Error</h1>
+        <p id="text">
+            The following errors occurred while processing your request:
+            <ul>
+                {{if .NameError}}<li>{{.NameError}}</li>{{end}}
+                {{if .EmailError}}<li>{{.EmailError}}</li>{{end}}
+                {{if .UsernameError}}<li>{{.UsernameError}}</li>{{end}}
+                {{if .PasswordError}}<li>{{.PasswordError}}</li>{{end}}
+                {{if .ConfirmPasswordError}}<li>{{.ConfirmPasswordError}}</li>{{end}}
+            </ul>
+        </p>
+        <a href="/"><button>Return to the Home Page</button></a>
     </div>
 </body>
 </html>
