@@ -16,7 +16,9 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 
 	_ "github.com/eminetto/mongo-migrate"
+	"go.mongodb.org/mongo-driver/bson"
 	_ "go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 
 	// "go.mongodb.org/mongo-driver/mongo"
@@ -31,10 +33,11 @@ import (
 )
 
 type User struct {
-	Name       string `bson:"name"`
-	Username   string `bson:"username"`
-	Email      string `bson:"email"`
-	Password   string `bson:"password"`
+	ID         primitive.ObjectID `bson:"_id"`
+	Name       string             `bson:"name"`
+	Username   string             `bson:"username"`
+	Email      string             `bson:"email"`
+	Password   string             `bson:"password"`
 	Created_at time.Time
 	Updated_at time.Time
 }
@@ -55,7 +58,8 @@ func main() {
 		log.Fatal("Error creating MongoDB client:", err)
 	}
 
-	// Create context with a timeout
+	// Create context
+
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 	// Connect to MongoDB
@@ -71,10 +75,52 @@ func main() {
 	}
 
 	fmt.Println("Connected to MongoDB Atlas!")
+	err = addNewField(ctx, client)
+	if err != nil {
+		fmt.Println("Error during migration:", err)
+		return
+	}
 
-	// Define the migration
-	// Perform your migration task, e.g., add an index or update documents
+	fmt.Println("Migration executed successfully.")
+	//get and show all users
+	users, err := getAllUsers(ctx, client, "go-assignment-2", "users")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 
+	fmt.Println("All Users:")
+	for _, user := range users {
+		fmt.Printf("ID: %s, Username: %s\n", user.ID, user.Username)
+	}
+
+	//find user by ID
+	userIDHex := "6599a9dd1b08bb744ae9cfa9 "
+	user, err := findUserByID(ctx, client, "go-assignment-2", "users", userIDHex)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Println(user)
+
+	//update username by ID
+	newUsername := "damir228monkey"
+	err = updateUserUsernameByID(ctx, client, "go-assignment-2", "users", userIDHex, newUsername)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Println(" username was successfully updated")
+
+	//delete document by id (commented because, we need to write always new id, cause of err)
+	/*userIDHexDeletion := "65998f7d6ec25aef596fd955"
+	err = deleteUserByID(ctx, client, "go-assignment-2", "users", userIDHexDeletion)
+	if err != nil {
+		fmt.Println(err)
+		return
+	} */
+
+	//server
 	http.HandleFunc("/", homeHandler)
 	http.HandleFunc("/submit", submitHandler)
 	http.HandleFunc("/error", errorPageHandler) // Damir end and start
@@ -85,9 +131,6 @@ func main() {
 	if err1 != nil {
 		fmt.Println("Error:", err1)
 	}
-	// Replace the following connection string with your MongoDB Atlas connection string
-
-	// Perform your MongoDB operations here
 
 	// Disconnect from MongoDB
 	err = client.Disconnect(ctx)
@@ -145,8 +188,6 @@ func submitHandler(w http.ResponseWriter, r *http.Request) {
 		} // end damir
 
 		log.Printf("Received form data: %+v\n", user)
-
-		// insertData(user)
 
 		fmt.Fprintln(w, "Data successfully submitted.")
 	} else {
@@ -233,3 +274,123 @@ func error404PageHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
 } //end damir
+func findUserByID(ctx context.Context, client *mongo.Client, databaseName, collectionName, userIDHex string) (*User, error) {
+	collection := client.Database(databaseName).Collection(collectionName)
+
+	// Convert the hex string to an ObjectId
+	objectID, err := primitive.ObjectIDFromHex(userIDHex)
+	if err != nil {
+		return nil, err
+	}
+
+	// filter to find the document by its ID
+	filter := bson.M{"_id": objectID}
+
+	// query
+	var user User
+	err = collection.FindOne(ctx, filter).Decode(&user)
+	if err == mongo.ErrNoDocuments {
+		return nil, fmt.Errorf("user not found")
+	} else if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}
+func updateUserUsernameByID(ctx context.Context, client *mongo.Client, databaseName, collectionName, userIDHex, newUsername string) error {
+	collection := client.Database(databaseName).Collection(collectionName)
+
+	//  hex string to an ObjectId
+	objectID, err := primitive.ObjectIDFromHex(userIDHex)
+	if err != nil {
+		return err
+	}
+
+	// Specify the filter to find the document by its ID
+	filter := bson.M{"_id": objectID}
+
+	// Specify the update to change by $set
+	update := bson.M{"$set": bson.M{"username": newUsername}}
+
+	// Update query
+	updateResult, err := collection.UpdateOne(ctx, filter, update)
+	if err != nil {
+		return err
+	}
+
+	if updateResult.ModifiedCount == 0 {
+		return fmt.Errorf("user not found")
+	}
+
+	return nil
+}
+func deleteUserByID(ctx context.Context, client *mongo.Client, databaseName, collectionName, userIDHex string) error {
+	collection := client.Database(databaseName).Collection(collectionName)
+
+	// Convert the hex string to an ObjectId
+	objectID, err := primitive.ObjectIDFromHex(userIDHex)
+	if err != nil {
+		return err
+	}
+
+	// filter to find the document by its ID
+	filter := bson.M{"_id": objectID}
+
+	// deletion
+	deleteResult, err := collection.DeleteOne(ctx, filter)
+	if err != nil {
+		return err
+	}
+
+	if deleteResult.DeletedCount == 0 {
+		return fmt.Errorf("user not found")
+	}
+
+	return nil
+}
+
+func getAllUsers(ctx context.Context, client *mongo.Client, databaseName, collectionName string) ([]User, error) {
+	collection := client.Database(databaseName).Collection(collectionName)
+
+	filter := bson.D{}
+
+	// query to get all users
+	cursor, err := collection.Find(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	// Iterate through the cursor and print each user
+	var users []User
+	for cursor.Next(ctx) {
+		var user User
+		err := cursor.Decode(&user)
+		if err != nil {
+			return nil, err
+		}
+		users = append(users, user)
+
+		// Print user details
+		fmt.Printf("ID: %s, Username: %s\n", user.ID, user.Username)
+	}
+
+	if err := cursor.Err(); err != nil {
+		return nil, err
+	}
+
+	return users, nil
+}
+func addNewField(ctx context.Context, client *mongo.Client) error {
+	collection := client.Database("go-assignment-2").Collection("users")
+
+	// Adding new default field
+	update := bson.M{"$set": bson.M{"minAge": "18"}}
+	_, err := collection.UpdateMany(ctx, bson.M{}, update)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("Migration Up completed successfully.")
+	return nil
+}
