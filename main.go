@@ -42,7 +42,7 @@ type User struct {
 	Updated_at time.Time
 }
 
-const uri = "mongodb+srv://ataytoleuov:abylai220439@abylaidb.3jyfmar.mongodb.net/"
+const uri = "mongodb://localhost:27017/"
 
 var client *mongo.Client
 
@@ -95,7 +95,7 @@ func main() {
 	}
 
 	//find user by ID
-	userIDHex := "6599a9dd1b08bb744ae9cfa9 "
+	userIDHex := "65a79472c03f5ac2c93660fd"
 	user, err := findUserByID(ctx, client, "go-assignment-2", "users", userIDHex)
 	if err != nil {
 		fmt.Println(err)
@@ -104,7 +104,7 @@ func main() {
 	fmt.Println(user)
 
 	//update username by ID
-	newUsername := "damir228monkey"
+	newUsername := "anita"
 	err = updateUserUsernameByID(ctx, client, "go-assignment-2", "users", userIDHex, newUsername)
 	if err != nil {
 		fmt.Println(err)
@@ -113,12 +113,12 @@ func main() {
 	fmt.Println(" username was successfully updated")
 
 	//delete document by id (commented because, we need to write always new id, cause of err)
-	/*userIDHexDeletion := "65998f7d6ec25aef596fd955"
+	userIDHexDeletion := "65a79472c03f5ac2c93660fd"
 	err = deleteUserByID(ctx, client, "go-assignment-2", "users", userIDHexDeletion)
 	if err != nil {
 		fmt.Println(err)
 		return
-	} */
+	}
 
 	//server
 	http.HandleFunc("/", homeHandler)
@@ -184,29 +184,31 @@ func submitHandler(w http.ResponseWriter, r *http.Request) {
 				log.Println("Error rendering error page:", err)
 				return
 			}
+
 			return
 		} // end damir
 
 		log.Printf("Received form data: %+v\n", user)
-
+		insertData(user)
 		fmt.Fprintln(w, "Data successfully submitted.")
 	} else {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
 }
 func insertData(u User) {
-
 	collection := client.Database("go-assignment-2").Collection("users")
 
+	// Insert user data into the MongoDB collection
 	insertResult, err := collection.InsertOne(context.TODO(), u)
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	fmt.Println("Inserted a single document: ", insertResult.InsertedID)
 }
-
 func getData(name string, email string, username string, password string) User {
 	user := User{
+		ID:         primitive.NewObjectID(),
 		Name:       name,
 		Email:      email,
 		Username:   username,
