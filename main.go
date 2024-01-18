@@ -3,6 +3,7 @@ package main
 import (
 	// "context"
 	"context"
+	"encoding/json"
 	"log"
 	"net/http"
 	"time"
@@ -95,35 +96,40 @@ func main() {
 	}
 
 	//find user by ID
-	userIDHex := "65a79472c03f5ac2c93660fd"
-	user, err := findUserByID(ctx, client, "go-assignment-2", "users", userIDHex)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	fmt.Println(user)
+	// userIDHex := "65a79472c03f5ac2c93660fd"
+	// user, err := findUserByID(ctx, client, "go-assignment-2", "users", userIDHex)
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	return
+	// }
+	// fmt.Println(user)
 
-	//update username by ID
-	newUsername := "anita"
-	err = updateUserUsernameByID(ctx, client, "go-assignment-2", "users", userIDHex, newUsername)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	fmt.Println(" username was successfully updated")
+	// //update username by ID
+	// newUsername := "anita"
+	// err = updateUserUsernameByID(ctx, client, "go-assignment-2", "users", userIDHex, newUsername)
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	return
+	// }
+	// fmt.Println(" username was successfully updated")
 
-	//delete document by id (commented because, we need to write always new id, cause of err)
-	userIDHexDeletion := "65a79472c03f5ac2c93660fd"
-	err = deleteUserByID(ctx, client, "go-assignment-2", "users", userIDHexDeletion)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
+	// //delete document by id (commented because, we need to write always new id, cause of err)
+	// userIDHexDeletion := "65a79472c03f5ac2c93660fd"
+	// err = deleteUserByID(ctx, client, "go-assignment-2", "users", userIDHexDeletion)
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	return
+	// }
 
 	//server
 	http.HandleFunc("/", homeHandler)
 	http.HandleFunc("/submit", submitHandler)
 	http.HandleFunc("/error", errorPageHandler) // Damir end and start
+	http.HandleFunc("/crud", crudHandler)
+	http.HandleFunc("/getUser", handleGetUser)
+	http.HandleFunc("/updateUser", handleUpdateUser)
+	// http.HandleFunc("/deleteUser", handleDeleteUser)
+	// http.HandleFunc("/getAllUsers", handleGetAllUsers)
 
 	port := 8080
 	fmt.Printf("Server is running on http://localhost:%d\n", port)
@@ -276,6 +282,62 @@ func error404PageHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
 } //end damir
+func crudHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodGet {
+		http.ServeFile(w, r, "crud.html")
+	} else {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	}
+}
+func handleGetUser(w http.ResponseWriter, r *http.Request) {
+	// Get user ID from the request parameters
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel();
+	id := r.FormValue("userId");
+	foundUser, err := findUserByID(ctx, client, "go-assignment-2", "users", id)
+	if err != nil{
+		fmt.Println("user not found");
+		return
+	}
+	log.Printf("Get user result: %+v\n", foundUser)
+    // Convert userID to int
+    
+
+    // Find user by ID (dummy data for illustration)
+    
+    // Respond with user data in a JSON format
+    if foundUser != nil {
+        respondWithJSON(w, foundUser)
+    } else {
+        respondWithError(w, "User not found")
+    }
+}
+func handleUpdateUser(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel();
+	userIDHex := r.FormValue("userId");
+	newUsername := r.FormValue("newUsername")
+	err := updateUserUsernameByID(ctx, client, "go-assignment-2", "users", userIDHex, newUsername)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Println(" username was successfully updated")
+	respondWithError(w, err.Error())
+}
+
+func respondWithError(w http.ResponseWriter, errorMsg string) {
+    // Respond with an error message in JSON format
+    w.Header().Set("Content-Type", "application/json")
+    w.WriteHeader(http.StatusNotFound)
+    json.NewEncoder(w).Encode(map[string]string{"error": errorMsg})
+}
+
+func respondWithJSON(w http.ResponseWriter, data interface{}) {
+    // Respond with user data in JSON format
+    w.Header().Set("Content-Type", "application/json")
+    json.NewEncoder(w).Encode(data)
+}
 func findUserByID(ctx context.Context, client *mongo.Client, databaseName, collectionName, userIDHex string) (*User, error) {
 	collection := client.Database(databaseName).Collection(collectionName)
 

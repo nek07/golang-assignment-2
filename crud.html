@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRUD Operations</title>
+    <!-- Bootstrap CSS link -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Arial', sans-serif;
+        }
+
+        h1 {
+            color: #007bff;
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        form {
+            max-width: 400px;
+            margin: 20px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        button {
+            margin-top: 10px;
+        }
+
+        #userData {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <h1>CRUD Operations</h1>
+
+    <!-- Get User by ID Form -->
+    <form id="getUserForm" action="/crud/getUser">
+        <div class="form-group">
+            <label for="userId">User ID:</label>
+            <input type="text" class="form-control" id="userId" name="userId" required>
+        </div>
+        <!-- <input type="submit" value="Get User" class="btn btn-primary"> -->
+        <button type="button" class="btn btn-primary" onclick="getUser()">Get User</button>
+    </form>
+
+    <!-- Update User by ID Form -->
+    <form id="updateUserForm">
+        <div class="form-group">
+            <label for="updateUserId">User ID:</label>
+            <input type="text" class="form-control" id="updateUserId" name="updateUserId" required>
+        </div>
+        <div class="form-group">
+            <label for="newUsername">New Username:</label>
+            <input type="text" class="form-control" id="newUsername" name=" " required>
+        </div>
+        <button type="button" class="btn btn-primary" onclick="updateUser()">Update User</button>
+    </form>
+
+    <!-- Delete User by ID Form -->
+    <form id="deleteUserForm">
+        <div class="form-group">
+            <label for="deleteUserId">User ID:</label>
+            <input type="text" class="form-control" id="deleteUserId" name="deleteUserId" required>
+        </div>
+        <button type="button" class="btn btn-danger" onclick="deleteUser()">Delete User</button>
+    </form>
+
+    <!-- Get All Users Button -->
+    <button type="button" class="btn btn-success" onclick="getAllUsers()">Get All Users</button>
+
+    <!-- Display User Data -->
+    <div id="userData">
+        <div id="userInfo"></div>
+    </div>
+    
+
+</div>
+
+<!-- Bootstrap JS and Popper.js scripts -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script>
+    function handleFormSubmission(url, formData, callback) {
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: new URLSearchParams(formData),
+        })
+            .then(response => response.json())
+            .then(data => {
+                // Call the provided callback function with the response data
+                callback(data);
+            })
+            .catch(error => console.error('ErrorTest:', error));
+    }
+
+    function getUser() {
+        // Implement logic to get a user by ID.
+        // Get form data
+        const formData = new FormData(document.getElementById('getUserForm'));
+        // Handle form submission
+        handleFormSubmission('/getUser', formData, updateUserInfo);
+    }
+
+    function updateUser() {
+        // Implement logic to update a user by ID.
+        // Get form data
+        const formData = new FormData(document.getElementById('updateUserForm'));
+        // Handle form submission
+        handleFormSubmission('/updateUser', formData, updateUserInfo);
+    }
+
+    function deleteUser() {
+        // Implement logic to delete a user by ID.
+        // Get form data
+        const formData = new FormData(document.getElementById('deleteUserForm'));
+        // Handle form submission
+        handleFormSubmission('/deleteUser', formData, updateUserInfo);
+    }
+
+    function getAllUsers() {
+        // Implement logic to get all users.
+        // Handle form submission
+        handleFormSubmission('/getAllUsers', new FormData(), updateUserInfo);
+    }
+
+    // Callback function to update the user information in the userData div
+    function updateUserInfo(data) {
+        const userInfoDiv = document.getElementById('userInfo');
+        userInfoDiv.innerHTML = "ID: "+ data.ID + "<br>Name: " + data.Name + "<br>Username: " + data.Username
+    }
+</script>
+</body>
+</html>
