@@ -64,9 +64,10 @@
         </div>
         <div class="form-group">
             <label for="newUsername">New Username:</label>
-            <input type="text" class="form-control" id="newUsername" name=" " required>
+            <input type="text" class="form-control" id="newUsername" name="newUsername" required>
         </div>
         <button type="button" class="btn btn-primary" onclick="updateUser()">Update User</button>
+        <p id="status1"></p>
     </form>
 
     <!-- Delete User by ID Form -->
@@ -143,7 +144,12 @@
     // Callback function to update the user information in the userData div
     function updateUserInfo(data) {
         const userInfoDiv = document.getElementById('userInfo');
-        userInfoDiv.innerHTML = "ID: "+ data.ID + "<br>Name: " + data.Name + "<br>Username: " + data.Username
+        if (data.message != null){
+            document.getElementById('status1').innerHTML = data.message;
+        } else{
+            userInfoDiv.innerHTML = "ID: "+ data.ID + "<br>Name: " + data.Name + "<br>Username: " + data.Username
+        }
+        
     }
 </script>
 </body>

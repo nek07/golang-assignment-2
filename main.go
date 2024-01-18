@@ -84,19 +84,19 @@ func main() {
 
 	fmt.Println("Migration executed successfully.")
 	//get and show all users
-	users, err := getAllUsers(ctx, client, "go-assignment-2", "users")
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
+	// users, err := getAllUsers(ctx, client, "go-assignment-2", "users")
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	return
+	// }
 
-	fmt.Println("All Users:")
-	for _, user := range users {
-		fmt.Printf("ID: %s, Username: %s\n", user.ID, user.Username)
-	}
+	// fmt.Println("All Users:")
+	// for _, user := range users {
+	// 	fmt.Printf("ID: %s, Username: %s\n", user.ID, user.Username)
+	// }
 
 	//find user by ID
-	// userIDHex := "65a79472c03f5ac2c93660fd"
+	// userIDHex := "65a96fd970c38547a91d4db3"
 	// user, err := findUserByID(ctx, client, "go-assignment-2", "users", userIDHex)
 	// if err != nil {
 	// 	fmt.Println(err)
@@ -104,8 +104,8 @@ func main() {
 	// }
 	// fmt.Println(user)
 
-	// //update username by ID
-	// newUsername := "anita"
+	//update username by ID
+	// newUsername := "Dosyan"
 	// err = updateUserUsernameByID(ctx, client, "go-assignment-2", "users", userIDHex, newUsername)
 	// if err != nil {
 	// 	fmt.Println(err)
@@ -309,28 +309,28 @@ func handleGetUser(w http.ResponseWriter, r *http.Request) {
     if foundUser != nil {
         respondWithJSON(w, foundUser)
     } else {
-        respondWithError(w, "User not found")
+        respondWithMessage(w, "User not found")
     }
 }
 func handleUpdateUser(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel();
-	userIDHex := r.FormValue("userId");
-	newUsername := r.FormValue("newUsername")
-	err := updateUserUsernameByID(ctx, client, "go-assignment-2", "users", userIDHex, newUsername)
+	userIDHex := r.FormValue("updateUserId");
+	newUsername := r.FormValue("newUsername");
+	var err error = updateUserUsernameByID(ctx, client, "go-assignment-2", "users", userIDHex, newUsername)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 	fmt.Println(" username was successfully updated")
-	respondWithError(w, err.Error())
+	respondWithMessage(w, "updated ofigeno")
 }
 
-func respondWithError(w http.ResponseWriter, errorMsg string) {
+func respondWithMessage(w http.ResponseWriter, msg string) {
     // Respond with an error message in JSON format
     w.Header().Set("Content-Type", "application/json")
     w.WriteHeader(http.StatusNotFound)
-    json.NewEncoder(w).Encode(map[string]string{"error": errorMsg})
+    json.NewEncoder(w).Encode(map[string]string{"message": msg})
 }
 
 func respondWithJSON(w http.ResponseWriter, data interface{}) {
@@ -361,7 +361,7 @@ func findUserByID(ctx context.Context, client *mongo.Client, databaseName, colle
 
 	return &user, nil
 }
-func updateUserUsernameByID(ctx context.Context, client *mongo.Client, databaseName, collectionName, userIDHex, newUsername string) error {
+func updateUserUsernameByID(ctx context.Context, client *mongo.Client, databaseName, collectionName, userIDHex string, newUsername string) error {
 	collection := client.Database(databaseName).Collection(collectionName)
 
 	//  hex string to an ObjectId
