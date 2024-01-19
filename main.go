@@ -83,44 +83,7 @@ func main() {
 	}
 
 	fmt.Println("Migration executed successfully.")
-	//get and show all users
-	// users, err := getAllUsers(ctx, client, "go-assignment-2", "users")
-	// if err != nil {
-	// 	fmt.Println(err)
-	// 	return
-	// }
-
-	// fmt.Println("All Users:")
-	// for _, user := range users {
-	// 	fmt.Printf("ID: %s, Username: %s\n", user.ID, user.Username)
-	// }
-
-	//find user by ID
-	// userIDHex := "65a96fd970c38547a91d4db3"
-	// user, err := findUserByID(ctx, client, "go-assignment-2", "users", userIDHex)
-	// if err != nil {
-	// 	fmt.Println(err)
-	// 	return
-	// }
-	// fmt.Println(user)
-
-	//update username by ID
-	// newUsername := "Dosyan"
-	// err = updateUserUsernameByID(ctx, client, "go-assignment-2", "users", userIDHex, newUsername)
-	// if err != nil {
-	// 	fmt.Println(err)
-	// 	return
-	// }
-	// fmt.Println(" username was successfully updated")
-
-	// //delete document by id (commented because, we need to write always new id, cause of err)
-	// userIDHexDeletion := "65a79472c03f5ac2c93660fd"
-	// err = deleteUserByID(ctx, client, "go-assignment-2", "users", userIDHexDeletion)
-	// if err != nil {
-	// 	fmt.Println(err)
-	// 	return
-	// }
-
+	
 	//server
 	http.HandleFunc("/", homeHandler)
 	http.HandleFunc("/submit", submitHandler)
@@ -128,8 +91,8 @@ func main() {
 	http.HandleFunc("/crud", crudHandler)
 	http.HandleFunc("/getUser", handleGetUser)
 	http.HandleFunc("/updateUser", handleUpdateUser)
-	// http.HandleFunc("/deleteUser", handleDeleteUser)
-	// http.HandleFunc("/getAllUsers", handleGetAllUsers)
+	http.HandleFunc("/deleteUser", handleDeleteUser)
+	http.HandleFunc("/getAllUsers", handleGetAllUsers)
 
 	port := 8080
 	fmt.Printf("Server is running on http://localhost:%d\n", port)
@@ -196,7 +159,7 @@ func submitHandler(w http.ResponseWriter, r *http.Request) {
 
 		log.Printf("Received form data: %+v\n", user)
 		insertData(user)
-		fmt.Fprintln(w, "Data successfully submitted.")
+		
 	} else {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
@@ -325,11 +288,37 @@ func handleUpdateUser(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(" username was successfully updated")
 	respondWithMessage(w, "updated ofigeno")
 }
-
+func handleDeleteUser(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel();
+	userIDHex := r.FormValue("deleteUserId");
+	var err error = deleteUserByID(ctx, client, "go-assignment-2", "users", userIDHex)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Println("User was successfully deleted")
+	respondWithMessage(w, "Udalen ofigeno")
+}
+func handleGetAllUsers(w http.ResponseWriter, r *http.Request) {
+	// Get user ID from the request parameters
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel();
+	foundUsers, err := getAllUsers(ctx, client, "go-assignment-2", "users");
+	if err != nil{
+		fmt.Println("user not found");
+		return
+	}
+	log.Printf("Get user result: %+v\n", foundUsers)
+    if foundUsers != nil {
+        respondWithJSON(w, foundUsers)
+    } else {
+        respondWithMessage(w, "Users not found")
+    }
+}
 func respondWithMessage(w http.ResponseWriter, msg string) {
     // Respond with an error message in JSON format
     w.Header().Set("Content-Type", "application/json")
-    w.WriteHeader(http.StatusNotFound)
     json.NewEncoder(w).Encode(map[string]string{"message": msg})
 }
 
