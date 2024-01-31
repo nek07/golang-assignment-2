@@ -1,15 +1,11 @@
 package main
 
 import (
-	// "context"
 	"context"
 	"encoding/json"
 	"log"
 	"net/http"
 	"time"
-
-	//go get go.mongodb.org/mongo-driver/mongo
-
 	_ "context"
 	"fmt"
 	_ "log"
@@ -21,13 +17,7 @@ import (
 	_ "go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-
-	// "go.mongodb.org/mongo-driver/mongo"
-	_ "go.mongodb.org/mongo-driver/mongo"
-	// "go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	_ "go.mongodb.org/mongo-driver/mongo/options"
-	_ "go.mongodb.org/mongo-driver/mongo/readpref"
 
 	"ass3/db"
 	"html/template" //end damir

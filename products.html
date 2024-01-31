@@ -132,7 +132,41 @@
       </ul>
     </div>
   </nav>
+  <div class="container mt-3 filters-container w-100">
+    <label for="categoryFilter" class="filter-dropdown">Brand:
+      <select id="categoryFilter">  
+        <option value="all">All</option>
+        <option value="dogs">Apple</option>
+        <option value="cats">Acer</option>
+        <option value="cats">Asus</option>
+        <!-- Add more categories as needed -->
+      </select>
+    </label>
 
+    <label for="ageFilter" class="filter-dropdown">Proccer:
+      <select id="ageFilter">
+        <option value="all">All</option>
+        <option value="puppy">Intel</option>
+        <option value="adult">Amd</option>
+        <option value="senior">M1</option>
+      </select>
+    </label>
+    <label for="priceRange" class="filter-dropdown">Price:
+      <input type="range" id="minPriceRange" class="price-range" min="0" max="1000000" step="10000" value="0">
+      <input type="range" id="maxPriceRange" class="price-range" min="0" max="1000000" step="10000" value="1000000">
+      <span>Min:<span class="price-output" id="minPriceOutput">0</span>T</span>
+      <span>Max:<span class="price-output" id="maxPriceOutput">1000000</span>T</span>
+    </label>
+    <label for="sortFilter" class="sort-dropdown">Sort by:
+      <select id="sortFilter">
+        <option value="none">none</option>
+        <option value="asc">Price Ascending</option>
+        <option value="desc">Price Descending</option>
+      </select>
+    </label>
+    <!-- Add more filters as needed -->
+    <button class="btn btn-info">Search</button>
+  </div>
   <!-- Product Cards -->
   <div class="container mt-5">
     <div class="row">
