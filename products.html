@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Animals</title>
+  <title>DosYan Shop</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap">
   <link rel="stylesheet"
     href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
@@ -86,6 +86,22 @@
       font-size: 12px;
       color: #777;
     }
+    .filters-container {
+      margin-bottom: 20px;
+    }
+
+    /* Add a new style for the dropdowns */
+    .filter-dropdown {
+      margin-right: 10px;
+    }
+
+    /* Add a new style for the price range slider */
+
+    /* Add a new style for the price output */
+    .price-output {
+      display: inline-block;
+      margin-left: 10px;
+    }
   </style>
   <link rel="stylesheet"
     href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
@@ -125,7 +141,33 @@
       </ul>
     </div>
   </nav>
+  <div class="container mt-3 filters-container w-100">
+    <label for="categoryFilter" class="filter-dropdown">Category:
+      <select id="categoryFilter">
+        <option value="all">All</option>
+        <option value="dogs">Laptops</option>
+        <option value="cats">Phone</option>
+        <!-- Add more categories as needed -->
+      </select>
+    </label>
 
+    <label for="ageFilter" class="filter-dropdown">Age:
+      <select id="ageFilter">
+        <option value="all">All</option>
+        <option value="puppy">Puppy</option>
+        <option value="adult">Adult</option>
+        <option value="senior">Senior</option>
+      </select>
+    </label>
+    <label for="priceRange" class="filter-dropdown">Price:
+      <input type="range" id="minPriceRange" class="price-range" min="0" max="1000" step="10" value="0">
+      <input type="range" id="maxPriceRange" class="price-range" min="0" max="1000" step="10" value="1000">
+      <span class="price-output" id="minPriceOutput">0</span>
+      <span class="price-output" id="maxPriceOutput">1000</span>
+    </label>
+    <!-- Add more filters as needed -->
+    <button class="btn btn-info">Search</button>
+  </div>
   <!-- Product Cards -->
   <div class="container mt-5">
     <div class="row justify-content-around">
@@ -142,6 +184,52 @@
   <footer class="bg-dark text-white text-center py-3">
     &copy; 2024 Paw Request Hub. All rights reserved.
   </footer>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const categoryFilter = document.getElementById("categoryFilter");
+      const ageFilter = document.getElementById("ageFilter");
+      const minPriceRange = document.getElementById("minPriceRange");
+      const maxPriceRange = document.getElementById("maxPriceRange");
+      const minPriceOutput = document.getElementById("minPriceOutput");
+      const maxPriceOutput = document.getElementById("maxPriceOutput");
+      const animalCards = document.getElementById("animalCards");
+
+      // Event listeners for filter changes
+      categoryFilter.addEventListener("change", updateFilters);
+      ageFilter.addEventListener("change", updateFilters);
+      minPriceRange.addEventListener("input", updatePriceOutput);
+      maxPriceRange.addEventListener("input", updatePriceOutput);
+      minPriceRange.addEventListener("change", updateFilters);
+      maxPriceRange.addEventListener("change", updateFilters);
+
+      function updateFilters() {
+        const selectedCategory = categoryFilter.value;
+        const selectedAge = ageFilter.value;
+        const minPrice = minPriceRange.value;
+        const maxPrice = maxPriceRange.value;
+
+        // Loop through animal cards to show/hide based on filters
+        const cards = animalCards.getElementsByClassName("profile-card");
+        Array.from(cards).forEach(card => {
+          const categoryMatch = selectedCategory === "all" || card.dataset.category === selectedCategory;
+          const ageMatch = selectedAge === "all" || card.dataset.age === selectedAge;
+          const priceMatch = parseInt(minPrice) <= parseInt(card.dataset.price) &&
+            parseInt(maxPrice) >= parseInt(card.dataset.price);
+
+          if (categoryMatch && ageMatch && priceMatch) {
+            card.style.display = "block";
+          } else {
+            card.style.display = "none";
+          }
+        });
+      }
+
+      function updatePriceOutput() {
+        minPriceOutput.textContent = minPriceRange.value;
+        maxPriceOutput.textContent = maxPriceRange.value;
+      }
+    });
+  </script>
 </body>
 
 </html>
