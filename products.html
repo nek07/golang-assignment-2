@@ -160,10 +160,17 @@
       </select>
     </label>
     <label for="priceRange" class="filter-dropdown">Price:
-      <input type="range" id="minPriceRange" class="price-range" min="0" max="1000" step="10" value="0">
-      <input type="range" id="maxPriceRange" class="price-range" min="0" max="1000" step="10" value="1000">
+      <input type="range" id="minPriceRange" class="price-range" min="0" max="1000000" step="10000" value="0">
+      <input type="range" id="maxPriceRange" class="price-range" min="0" max="1000000" step="10000" value="1000000">
       <span class="price-output" id="minPriceOutput">0</span>
-      <span class="price-output" id="maxPriceOutput">1000</span>
+      <span class="price-output" id="maxPriceOutput">1000000</span>
+    </label>
+    <label for="sortFilter" class="sort-dropdown">Sort by:
+      <select id="sortFilter">
+        <option value="none">none</option>
+        <option value="asc">Price Ascending</option>
+        <option value="desc">Price Descending</option>
+      </select>
     </label>
     <!-- Add more filters as needed -->
     <button class="btn btn-info">Search</button>
