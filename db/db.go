@@ -1,13 +1,14 @@
 package db
 
 import (
-	"fmt"
-	"go.mongodb.org/mongo-driver/mongo"
-	"time"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"context"
+	"fmt"
 	"log"
+	"time"
+
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 const uri = "mongodb://localhost:27017/"
@@ -35,6 +36,32 @@ func InsertData(u User) {
 
 	fmt.Println("Inserted a single document: ", insertResult.InsertedID)
 }
+
+/*
+	func GetProducts(ctx context.Context, client *mongo.Client,databaseName, collectionName) ([]laptops,error) {
+		cursor, err := collection1.Find(ctx, filter)
+		if err != nil {
+			fmt.Println(err)
+		}
+		defer cursor.Close(ctx)
+
+		// Iterate through the cursor and print each user
+		var laptops []Laptop
+		for cursor.Next(ctx) {
+			var laptop Laptop
+			err := cursor.Decode(&laptop)
+			if err != nil {
+				fmt.Println(err)
+			}
+			laptops = append(laptops, laptop)
+
+		}
+		fmt.Println(len(laptops))
+		if err := cursor.Err(); err != nil {
+			fmt.Println(err)
+		}
+	}
+*/
 func FindUserByID(ctx context.Context, client *mongo.Client, databaseName, collectionName, userIDHex string) (*User, error) {
 	collection := client.Database(databaseName).Collection(collectionName)
 

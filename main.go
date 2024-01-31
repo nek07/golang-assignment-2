@@ -17,6 +17,7 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 
 	_ "github.com/eminetto/mongo-migrate"
+	"go.mongodb.org/mongo-driver/bson"
 	_ "go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -28,9 +29,9 @@ import (
 	_ "go.mongodb.org/mongo-driver/mongo/options"
 	_ "go.mongodb.org/mongo-driver/mongo/readpref"
 
+	"ass3/db"
 	"html/template" //end damir
 	"strings"       //Damir
-	"ass3/db"
 )
 
 type User struct {
@@ -41,6 +42,12 @@ type User struct {
 	Password   string             `bson:"password"`
 	Created_at time.Time
 	Updated_at time.Time
+}
+type Laptop struct {
+	Brand       string `json:"brand"`
+	Model       string `json:"model"`
+	Description string `json:"description"`
+	Price       int    `json:"price"`
 }
 
 const uri = "mongodb://localhost:27017/"
@@ -83,7 +90,7 @@ func main() {
 	}
 
 	fmt.Println("Migration executed successfully.")
-	
+
 	//server
 	http.HandleFunc("/", homeHandler)
 	http.HandleFunc("/submit", submitHandler)
@@ -93,6 +100,8 @@ func main() {
 	http.HandleFunc("/updateUser", handleUpdateUser)
 	http.HandleFunc("/deleteUser", handleDeleteUser)
 	http.HandleFunc("/getAllUsers", handleGetAllUsers)
+
+	http.HandleFunc("/products", productsPageHandler)
 
 	port := 8080
 	fmt.Printf("Server is running on http://localhost:%d\n", port)
@@ -159,10 +168,11 @@ func submitHandler(w http.ResponseWriter, r *http.Request) {
 
 		log.Printf("Received form data: %+v\n", user)
 		db.InsertData(user)
-		
+
 	} else {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
+
 }
 func getData(name string, email string, username string, password string) db.User {
 	user := db.User{
@@ -220,6 +230,44 @@ func checkForm(name, email, username, password, confirmPassword string) Validati
 
 	return errors
 }
+func productsPageHandler(w http.ResponseWriter, r *http.Request) {
+	filter := bson.D{}
+	db := client.Database("go-assignment-2")
+	collection1 := db.Collection("products")
+	// query to get all users
+	cursor, err := collection1.Find(context.Background(), filter)
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer cursor.Close(context.Background())
+
+	// Iterate through the cursor and print each user
+	var laptops []Laptop
+	for cursor.Next(context.Background()) {
+		var laptop Laptop
+		err := cursor.Decode(&laptop)
+		if err != nil {
+			fmt.Println(err)
+		}
+		laptops = append(laptops, laptop)
+
+	}
+	fmt.Println(len(laptops))
+	if err := cursor.Err(); err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println("After MongoDB query")
+
+	// Render the HTML template with the fetched data
+	tmpl, err := template.ParseFiles("products.html")
+	if err != nil {
+		fmt.Println("Error parsing HTML template:", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+	}
+
+	// Execute the template with the list of ViewData items
+	tmpl.Execute(w, laptops)
+}
 func errorPageHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 		http.ServeFile(w, r, "error.html")
@@ -244,31 +292,30 @@ func crudHandler(w http.ResponseWriter, r *http.Request) {
 func handleGetUser(w http.ResponseWriter, r *http.Request) {
 	// Get user ID from the request parameters
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel();
-	id := r.FormValue("userId");
+	defer cancel()
+	id := r.FormValue("userId")
 	foundUser, err := db.FindUserByID(ctx, client, "go-assignment-2", "users", id)
-	if err != nil{
-		fmt.Println("user not found");
+	if err != nil {
+		fmt.Println("user not found")
 		return
 	}
 	log.Printf("Get user result: %+v\n", foundUser)
-    // Convert userID to int
-    
+	// Convert userID to int
 
-    // Find user by ID (dummy data for illustration)
-    
-    // Respond with user data in a JSON format
-    if foundUser != nil {
-        respondWithJSON(w, foundUser)
-    } else {
-        respondWithMessage(w, "User not found")
-    }
+	// Find user by ID (dummy data for illustration)
+
+	// Respond with user data in a JSON format
+	if foundUser != nil {
+		respondWithJSON(w, foundUser)
+	} else {
+		respondWithMessage(w, "User not found")
+	}
 }
 func handleUpdateUser(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel();
-	userIDHex := r.FormValue("updateUserId");
-	newUsername := r.FormValue("newUsername");
+	defer cancel()
+	userIDHex := r.FormValue("updateUserId")
+	newUsername := r.FormValue("newUsername")
 	var err error = db.UpdateUserUsernameByID(ctx, client, "go-assignment-2", "users", userIDHex, newUsername)
 	if err != nil {
 		fmt.Println(err)
@@ -279,8 +326,8 @@ func handleUpdateUser(w http.ResponseWriter, r *http.Request) {
 }
 func handleDeleteUser(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel();
-	userIDHex := r.FormValue("deleteUserId");
+	defer cancel()
+	userIDHex := r.FormValue("deleteUserId")
 	var err error = db.DeleteUserByID(ctx, client, "go-assignment-2", "users", userIDHex)
 	if err != nil {
 		fmt.Println(err)
@@ -292,27 +339,27 @@ func handleDeleteUser(w http.ResponseWriter, r *http.Request) {
 func handleGetAllUsers(w http.ResponseWriter, r *http.Request) {
 	// Get user ID from the request parameters
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel();
-	foundUsers, err := db.GetAllUsers(ctx, client, "go-assignment-2", "users");
-	if err != nil{
-		fmt.Println("user not found");
+	defer cancel()
+	foundUsers, err := db.GetAllUsers(ctx, client, "go-assignment-2", "users")
+	if err != nil {
+		fmt.Println("user not found")
 		return
 	}
 	log.Printf("Get user result: %+v\n", foundUsers)
-    if foundUsers != nil {
-        respondWithJSON(w, foundUsers)
-    } else {
-        respondWithMessage(w, "Users not found")
-    }
+	if foundUsers != nil {
+		respondWithJSON(w, foundUsers)
+	} else {
+		respondWithMessage(w, "Users not found")
+	}
 }
 func respondWithMessage(w http.ResponseWriter, msg string) {
-    // Respond with an error message in JSON format
-    w.Header().Set("Content-Type", "application/json")
-    json.NewEncoder(w).Encode(map[string]string{"message": msg})
+	// Respond with an error message in JSON format
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"message": msg})
 }
 
 func respondWithJSON(w http.ResponseWriter, data interface{}) {
-    // Respond with user data in JSON format
-    w.Header().Set("Content-Type", "application/json")
-    json.NewEncoder(w).Encode(data)
+	// Respond with user data in JSON format
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(data)
 }

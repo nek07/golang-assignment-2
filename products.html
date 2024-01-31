@@ -110,34 +110,40 @@
         <li class="nav-item active">
           <a class="nav-link" href="/adoption">Adoption</a>
         </li>
-        <li class="nav-item">
-          <a class="nav-link" href="/support">Support</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="/resources">Resources</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="/aboutus">About us</a>
-        </li>
         <li class="nav-item ">
           <a class="nav-link" href="/login">Login</a>
         </li>
       </ul>
     </div>
   </nav>
-
-  <!-- Product Cards -->
   <div class="container mt-5">
-    <div class="row justify-content-around">
+    <div class="row">
+        <div class="container mt-5">
+            <div class="row">
+
       {{ range . }}
       <div class="profile-card">
-        <h1>{{ .Title }}</h1>
-        <p>{{ .Message }}</p>
-      </div>
-      {{ end }}
-    </div>
-  </div>
+        <!-- Image on the left side -->
+        <img  alt="Profile Image" class="profile-image">
 
+        <!-- Content on the right side -->
+        <div class="profile-content">
+            <!-- Name -->
+            <div class="profile-name">{{ .Brand }}</div>
+            <span class="profile-age">• {{ .Model }} •</span>
+            
+            <!-- Description -->
+            <div class="profile-description">{{ .Description }}</div>
+            <hr>
+            <span class="profile-location">• {{ .Price }}</span>
+        </div>
+        
+    </div>
+    {{ end }}
+  </div>
+</div>
+</div>
+</div>
   <!-- Footer -->
   <footer class="bg-dark text-white text-center py-3">
     &copy; 2024 Paw Request Hub. All rights reserved.
