@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Animals</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap">
+  <link rel="stylesheet"
+    href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+    integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+    crossorigin="anonymous">
+  <style>
+    /* Styles for the card container */
+    /* Import Montserrat font from Google Fonts */
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
+
+    /* Apply Montserrat font to all elements */
+    body {
+      font-family: 'Montserrat', sans-serif;
+    }
+
+    /* Apply Montserrat font to specific elements */
+    h1,
+    h2,
+    h3,
+    p {
+      font-family: 'Montserrat', sans-serif;
+    }
+
+    .profile-card {
+      width: 500px;
+      height: 200px;
+      display: block;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      overflow: hidden;
+      margin: 20px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      transition: box-shadow 0.3s ease-in-out;
+    }
+
+    .profile-card:hover {
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Styles for the image */
+    .profile-image {
+      width: 150px;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* Styles for the content on the right side */
+    .profile-content {
+      flex: 1;
+      padding: 15px;
+    }
+
+    /* Styles for name, description, and age */
+    .profile-name {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    .profile-description {
+      font-size: 14px;
+      color: #555;
+      margin: 8px 0 5px;
+      overflow: hidden;
+    }
+
+    .profile-location {
+      font-size: 14px;
+      color: #000;
+      margin: 4rem 0 !important;
+      overflow: hidden;
+    }
+
+    hr {
+      margin: 1rem 0rem 0.5rem !important;
+    }
+
+    .profile-age {
+      font-size: 12px;
+      color: #777;
+    }
+  </style>
+  <link rel="stylesheet"
+    href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+    integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+    crossorigin="anonymous">
+</head>
+
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <a class="navbar-brand" href="#">Paw Rescue Hub</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+      aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ml-auto">
+        <li class="nav-item ">
+          <a class="nav-link" href="/home">Home <span class="sr-only">(current)</span></a>
+        </li>
+        <li class="nav-item active">
+          <a class="nav-link" href="/adoption">Adoption</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/support">Support</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/resources">Resources</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/aboutus">About us</a>
+        </li>
+        <li class="nav-item ">
+          <a class="nav-link" href="/login">Login</a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Product Cards -->
+  <div class="container mt-5">
+    <div class="row justify-content-around">
+      {{ range . }}
+      <div class="profile-card">
+        <h1>{{ .Title }}</h1>
+        <p>{{ .Message }}</p>
+      </div>
+      {{ end }}
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="bg-dark text-white text-center py-3">
+    &copy; 2024 Paw Request Hub. All rights reserved.
+  </footer>
+</body>
+
+</html>
