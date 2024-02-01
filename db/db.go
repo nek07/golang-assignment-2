@@ -6,11 +6,12 @@ import (
 	"log"
 	"time"
 
+	"regexp"
+
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"regexp"
 )
 
 const uri = "mongodb://localhost:27017/"
@@ -33,7 +34,6 @@ type Laptop struct {
 	Price       int    `bson:"price"`
 	Proccer     string `bson:"proccer"`
 }
-
 
 func InsertData(u User) {
 	collection := client.Database("go-assignment-2").Collection("users")
@@ -221,8 +221,8 @@ func FindProductsWithFilters(brands []string, minPrice int, maxPrice int, sortBy
 	// }
 
 	// Add brand filter
-	if brands[0] == ""{
-		
+	if brands[0] == "" {
+
 	}
 	if len(brands) > 0 {
 		brandRegex := fmt.Sprintf("^%s", regexp.QuoteMeta(brands[0]))
@@ -240,7 +240,7 @@ func FindProductsWithFilters(brands []string, minPrice int, maxPrice int, sortBy
 	case "desc":
 		options.SetSort(bson.D{{"price", -1}})
 	}
-	options.SetSkip(int64(skip)).SetLimit(int64(limit));
+	options.SetSkip(int64(skip)).SetLimit(int64(limit))
 
 	// Execute the find operation
 	cursor, err := collection.Find(ctx, filter, options)
