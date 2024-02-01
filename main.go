@@ -2,13 +2,13 @@ package main
 
 import (
 	"context"
+	_ "context"
 	"encoding/json"
+	"fmt"
 	"log"
+	_ "log"
 	"net/http"
 	"time"
-	_ "context"
-	"fmt"
-	_ "log"
 
 	_ "github.com/joho/godotenv/autoload"
 
@@ -21,8 +21,8 @@ import (
 
 	"ass3/db"
 	"html/template" //end damir
-	"strings"       //Damir
 	"strconv"
+	"strings" //Damir
 )
 
 type User struct {
@@ -227,11 +227,11 @@ func productsPageHandler(w http.ResponseWriter, r *http.Request) {
 	sortBy := r.URL.Query().Get("sort")
 	minPrice, err := strconv.Atoi(r.URL.Query().Get("min"))
 	maxPrice, err := strconv.Atoi(r.URL.Query().Get("max"))
-	if(r.URL.Query().Get("min") == ""){
-		minPrice = 0;
+	if r.URL.Query().Get("min") == "" {
+		minPrice = 0
 	}
-	if(r.URL.Query().Get("max") == ""){
-		maxPrice = 999999999;
+	if r.URL.Query().Get("max") == "" {
+		maxPrice = 999999999
 	}
 	filter := bson.D{}
 	db1 := client.Database("go-assignment-2")
@@ -244,16 +244,14 @@ func productsPageHandler(w http.ResponseWriter, r *http.Request) {
 	defer cursor.Close(context.Background())
 
 	// Iterate through the cursor and print each user
-	
 
 	// brands := []string{"Apple"}
-	
+
 	result, err := db.FindProductsWithFilters(brands, minPrice, maxPrice, sortBy)
 	if err != nil {
 		log.Fatal("Error calling FindProductsWithFilters: %v", err)
 	}
-	fmt.Println(result);
-
+	fmt.Println(result)
 
 	// Render the HTML template with the fetched data
 	tmpl, err := template.ParseFiles("products.html")
