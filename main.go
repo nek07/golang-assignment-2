@@ -227,6 +227,12 @@ func productsPageHandler(w http.ResponseWriter, r *http.Request) {
 	sortBy := r.URL.Query().Get("sort")
 	minPrice, err := strconv.Atoi(r.URL.Query().Get("min"))
 	maxPrice, err := strconv.Atoi(r.URL.Query().Get("max"))
+	page, _ := strconv.Atoi(r.URL.Query().Get("page"))
+
+	if page <= 0 {
+		page = 1
+	}
+
 	if(r.URL.Query().Get("min") == ""){
 		minPrice = 0;
 	}
@@ -248,7 +254,7 @@ func productsPageHandler(w http.ResponseWriter, r *http.Request) {
 
 	// brands := []string{"Apple"}
 	
-	result, err := db.FindProductsWithFilters(brands, minPrice, maxPrice, sortBy)
+	result, err := db.FindProductsWithFilters(brands, minPrice, maxPrice, sortBy, page)
 	if err != nil {
 		log.Fatal("Error calling FindProductsWithFilters: %v", err)
 	}

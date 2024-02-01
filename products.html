@@ -200,6 +200,11 @@
     </div>
     {{ end }}
   </div>
+  <div id="pagination" class="mt-3">
+    <button id="prevPage">Previous Page</button>
+    <span id="currentPage">1</span>
+    <button id="nextPage">Next Page</button>
+  </div>
 </div>
 </div>
 </div>
@@ -233,15 +238,29 @@
       var minPrice = document.getElementById('minPriceRange').value;
       var maxPrice = document.getElementById('maxPriceRange').value;
       var sortBy = document.getElementById('sortFilter').value;
+      var page = document.getElementById('currentPage').innerText;
 
       // Construct the URL
       var url = '/products?brand=' + brand +
         '&min=' + minPrice +
         '&max=' + maxPrice +
-        '&sort=' + sortBy;
+        '&sort=' + sortBy +
+        '&page=' + page;
 
       window.location.href = url;
     })
+    var currentPage = 1;
+    document.getElementById('prevPage').addEventListener('click', function () {
+      if (currentPage > 1) {
+        currentPage--;
+        document.getElementById('currentPage').innerText = currentPage;
+      }
+    });
+
+    document.getElementById('nextPage').addEventListener('click', function () {
+      currentPage++;
+      document.getElementById('currentPage').innerText = currentPage;
+    });
   </script>
 </body>
 
