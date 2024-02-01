@@ -32,7 +32,6 @@ type Laptop struct {
 	Model       string `bson:"model"`
 	Description string `bson:"description"`
 	Price       int    `bson:"price"`
-	Proccer     string `bson:"proccer"`
 }
 
 func InsertData(u User) {
@@ -192,19 +191,19 @@ func AddNewField(ctx context.Context, client *mongo.Client) error {
 	fmt.Println("Migration Up completed successfully.")
 	return nil
 }
-func FindProductsWithFilters(brands []string, minPrice int, maxPrice int, sortBy string, page int) ([]Laptop, error) {
+func FindProductsWithFilters(brands []string, minPrice int, maxPrice int, sortBy string, page int) ([]Laptop, int64, error) {
 	limit := 10
 	skip := (page - 1) * limit
 
 	// Set up MongoDB client
 	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://localhost:27017"))
 	if err != nil {
-		return nil, fmt.Errorf("Error creating MongoDB client: %v", err)
+		return nil,0,  fmt.Errorf("Error creating MongoDB client: %v", err)
 	}
 	ctx := context.TODO()
 	err = client.Connect(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("Error connecting to MongoDB: %v", err)
+		return nil,0,  fmt.Errorf("Error connecting to MongoDB: %v", err)
 	}
 	defer client.Disconnect(ctx)
 
@@ -231,6 +230,10 @@ func FindProductsWithFilters(brands []string, minPrice int, maxPrice int, sortBy
 
 	// Add price range filter
 	filter["price"] = bson.M{"$gte": minPrice, "$lte": maxPrice}
+	totalDocuments, err := collection.CountDocuments(ctx, filter)
+    if err != nil {
+        return nil, 0, fmt.Errorf("Error counting documents: %v", err)
+    }
 
 	// Build the options for sorting
 	options := options.Find()
@@ -245,7 +248,7 @@ func FindProductsWithFilters(brands []string, minPrice int, maxPrice int, sortBy
 	// Execute the find operation
 	cursor, err := collection.Find(ctx, filter, options)
 	if err != nil {
-		return nil, fmt.Errorf("Error executing find operation: %v", err)
+		return nil,0,  fmt.Errorf("Error executing find operation: %v", err)
 	}
 	defer cursor.Close(ctx)
 
@@ -253,8 +256,8 @@ func FindProductsWithFilters(brands []string, minPrice int, maxPrice int, sortBy
 	var laptops []Laptop
 	err = cursor.All(ctx, &laptops)
 	if err != nil {
-		return nil, fmt.Errorf("Error decoding results: %v", err)
+		return nil,0, fmt.Errorf("Error decoding results: %v", err)
 	}
 
-	return laptops, nil
+	return laptops, totalDocuments, nil
 }

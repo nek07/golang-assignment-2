@@ -34,11 +34,9 @@ type User struct {
 	Created_at time.Time
 	Updated_at time.Time
 }
-type Laptop struct {
-	Brand       string `json:"brand"`
-	Model       string `json:"model"`
-	Description string `json:"description"`
-	Price       int    `json:"price"`
+type Data struct {
+	DocumentCount int64 `json:"DocumentCount"`
+	Laptops []db.Laptop
 }
 
 const uri = "mongodb://localhost:27017/"
@@ -253,12 +251,14 @@ func productsPageHandler(w http.ResponseWriter, r *http.Request) {
 
 	// brands := []string{"Apple"}
 
-	result, err := db.FindProductsWithFilters(brands, minPrice, maxPrice, sortBy, page)
+	result, count, err := db.FindProductsWithFilters(brands, minPrice, maxPrice, sortBy, page)
 	if err != nil {
 		log.Fatal("Error calling FindProductsWithFilters: %v", err)
 	}
-	fmt.Println(result)
-
+	data := Data{
+		Laptops: result,
+		DocumentCount: count,
+	}
 	// Render the HTML template with the fetched data
 	tmpl, err := template.ParseFiles("products.html")
 	if err != nil {
@@ -267,7 +267,7 @@ func productsPageHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Execute the template with the list of ViewData items
-	tmpl.Execute(w, result)
+	tmpl.Execute(w, data)
 }
 func errorPageHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
