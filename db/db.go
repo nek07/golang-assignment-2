@@ -192,7 +192,10 @@ func AddNewField(ctx context.Context, client *mongo.Client) error {
 	fmt.Println("Migration Up completed successfully.")
 	return nil
 }
-func FindProductsWithFilters(brands []string, minPrice int, maxPrice int, sortBy string) ([]Laptop, error) {
+func FindProductsWithFilters(brands []string, minPrice int, maxPrice int, sortBy string, page int) ([]Laptop, error) {
+	limit := 10
+	skip := (page - 1) * limit
+
 	// Set up MongoDB client
 	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://localhost:27017"))
 	if err != nil {
@@ -237,6 +240,7 @@ func FindProductsWithFilters(brands []string, minPrice int, maxPrice int, sortBy
 	case "desc":
 		options.SetSort(bson.D{{"price", -1}})
 	}
+	options.SetSkip(int64(skip)).SetLimit(int64(limit));
 
 	// Execute the find operation
 	cursor, err := collection.Find(ctx, filter, options)
