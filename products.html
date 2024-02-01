@@ -135,37 +135,44 @@
   <div class="container mt-3 filters-container w-100">
     <label for="categoryFilter" class="filter-dropdown">Brand:
       <select id="categoryFilter">  
-        <option value="all">All</option>
-        <option value="dogs">Apple</option>
-        <option value="cats">Acer</option>
-        <option value="cats">Asus</option>
+        <option value="">All</option>
+        <option value="Apple">Apple</option>
+        <option value="Acer">Acer</option>
+        <option value="Asus">Asus</option>
+        <option value="Lenovo">Lenovo</option>
+        <option value="MSI">MSI</option>
+        <option value="Dell">Dell</option>
+        <option value="HP">HP</option>
+        <option value="Razer">Razer</option>
+
+
         <!-- Add more categories as needed -->
       </select>
     </label>
 
-    <label for="ageFilter" class="filter-dropdown">Proccer:
+    <!-- <label for="ageFilter" class="filter-dropdown">:
       <select id="ageFilter">
         <option value="all">All</option>
         <option value="puppy">Intel</option>
         <option value="adult">Amd</option>
         <option value="senior">M1</option>
       </select>
-    </label>
+    </label> -->
     <label for="priceRange" class="filter-dropdown">Price:
-      <input type="range" id="minPriceRange" class="price-range" min="0" max="1000000" step="10000" value="0">
-      <input type="range" id="maxPriceRange" class="price-range" min="0" max="1000000" step="10000" value="1000000">
+      <input type="range" id="minPriceRange" class="price-range" min="0" max="5000000" step="10000" value="0">
+      <input type="range" id="maxPriceRange" class="price-range" min="0" max="5000000" step="10000" value="5000000">
       <span>Min:<span class="price-output" id="minPriceOutput">0</span>T</span>
-      <span>Max:<span class="price-output" id="maxPriceOutput">1000000</span>T</span>
+      <span>Max:<span class="price-output" id="maxPriceOutput">5000000</span>T</span>
     </label>
     <label for="sortFilter" class="sort-dropdown">Sort by:
       <select id="sortFilter">
-        <option value="none">none</option>
+        <option value=""></option>
         <option value="asc">Price Ascending</option>
         <option value="desc">Price Descending</option>
       </select>
     </label>
     <!-- Add more filters as needed -->
-    <button class="btn btn-info">Search</button>
+    <button id="applyFilters" class="btn btn-info">Apply Filters</button>
   </div>
   <!-- Product Cards -->
   <div class="container mt-5">
@@ -202,49 +209,39 @@
   </footer>
   <script>
     document.addEventListener("DOMContentLoaded", function () {
-      const categoryFilter = document.getElementById("categoryFilter");
-      const ageFilter = document.getElementById("ageFilter");
       const minPriceRange = document.getElementById("minPriceRange");
       const maxPriceRange = document.getElementById("maxPriceRange");
       const minPriceOutput = document.getElementById("minPriceOutput");
       const maxPriceOutput = document.getElementById("maxPriceOutput");
-      const animalCards = document.getElementById("animalCards");
 
-      // Event listeners for filter changes
-      categoryFilter.addEventListener("change", updateFilters);
-      ageFilter.addEventListener("change", updateFilters);
       minPriceRange.addEventListener("input", updatePriceOutput);
       maxPriceRange.addEventListener("input", updatePriceOutput);
       minPriceRange.addEventListener("change", updateFilters);
       maxPriceRange.addEventListener("change", updateFilters);
 
-      function updateFilters() {
-        const selectedCategory = categoryFilter.value;
-        const selectedAge = ageFilter.value;
-        const minPrice = minPriceRange.value;
-        const maxPrice = maxPriceRange.value;
-
-        // Loop through animal cards to show/hide based on filters
-        const cards = animalCards.getElementsByClassName("profile-card");
-        Array.from(cards).forEach(card => {
-          const categoryMatch = selectedCategory === "all" || card.dataset.category === selectedCategory;
-          const ageMatch = selectedAge === "all" || card.dataset.age === selectedAge;
-          const priceMatch = parseInt(minPrice) <= parseInt(card.dataset.price) &&
-            parseInt(maxPrice) >= parseInt(card.dataset.price);
-
-          if (categoryMatch && ageMatch && priceMatch) {
-            card.style.display = "block";
-          } else {
-            card.style.display = "none";
-          }
-        });
-      }
 
       function updatePriceOutput() {
         minPriceOutput.textContent = minPriceRange.value;
         maxPriceOutput.textContent = maxPriceRange.value;
       }
     });
+  </script>
+   <script>
+    document.getElementById('applyFilters').addEventListener('click', function () {
+      // Get selected values
+      var brand = document.getElementById('categoryFilter').value;
+      var minPrice = document.getElementById('minPriceRange').value;
+      var maxPrice = document.getElementById('maxPriceRange').value;
+      var sortBy = document.getElementById('sortFilter').value;
+
+      // Construct the URL
+      var url = '/products?brand=' + brand +
+        '&min=' + minPrice +
+        '&max=' + maxPrice +
+        '&sort=' + sortBy;
+
+      window.location.href = url;
+    })
   </script>
 </body>
 

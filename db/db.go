@@ -9,6 +9,8 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
+	"regexp"
 )
 
 const uri = "mongodb://localhost:27017/"
@@ -24,6 +26,14 @@ type User struct {
 	Created_at time.Time
 	Updated_at time.Time
 }
+type Laptop struct {
+	Brand       string `bson:"brand"`
+	Model       string `bson:"model"`
+	Description string `bson:"description"`
+	Price       int    `bson:"price"`
+	Proccer     string `bson:"proccer"`
+}
+
 
 func InsertData(u User) {
 	collection := client.Database("go-assignment-2").Collection("users")
@@ -181,4 +191,66 @@ func AddNewField(ctx context.Context, client *mongo.Client) error {
 
 	fmt.Println("Migration Up completed successfully.")
 	return nil
+}
+func FindProductsWithFilters(brands []string, minPrice int, maxPrice int, sortBy string) ([]Laptop, error) {
+	// Set up MongoDB client
+	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://localhost:27017"))
+	if err != nil {
+		return nil, fmt.Errorf("Error creating MongoDB client: %v", err)
+	}
+	ctx := context.TODO()
+	err = client.Connect(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("Error connecting to MongoDB: %v", err)
+	}
+	defer client.Disconnect(ctx)
+
+	// Set up the database and collection
+	database := client.Database("go-assignment-2")
+	collection := database.Collection("products")
+
+	// Build the filter based on input parameters
+	filter := bson.M{}
+
+	// Add proccer filter
+	// if len(proccers) > 0 {
+	// 	filter["proccer"] = bson.M{"$in": proccers}
+	// }
+
+	// Add brand filter
+	if brands[0] == ""{
+		
+	}
+	if len(brands) > 0 {
+		brandRegex := fmt.Sprintf("^%s", regexp.QuoteMeta(brands[0]))
+		filter["brand"] = bson.M{"$regex": primitive.Regex{Pattern: brandRegex, Options: ""}}
+	}
+
+	// Add price range filter
+	filter["price"] = bson.M{"$gte": minPrice, "$lte": maxPrice}
+
+	// Build the options for sorting
+	options := options.Find()
+	switch sortBy {
+	case "asc":
+		options.SetSort(bson.D{{"price", 1}})
+	case "desc":
+		options.SetSort(bson.D{{"price", -1}})
+	}
+
+	// Execute the find operation
+	cursor, err := collection.Find(ctx, filter, options)
+	if err != nil {
+		return nil, fmt.Errorf("Error executing find operation: %v", err)
+	}
+	defer cursor.Close(ctx)
+
+	// Decode the results
+	var laptops []Laptop
+	err = cursor.All(ctx, &laptops)
+	if err != nil {
+		return nil, fmt.Errorf("Error decoding results: %v", err)
+	}
+
+	return laptops, nil
 }

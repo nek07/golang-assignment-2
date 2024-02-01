@@ -22,6 +22,7 @@ import (
 	"ass3/db"
 	"html/template" //end damir
 	"strings"       //Damir
+	"strconv"
 )
 
 type User struct {
@@ -221,9 +222,20 @@ func checkForm(name, email, username, password, confirmPassword string) Validati
 	return errors
 }
 func productsPageHandler(w http.ResponseWriter, r *http.Request) {
+	// page := r.URL.Query().Get("page")
+	brands := []string{r.URL.Query().Get("brand")}
+	sortBy := r.URL.Query().Get("sort")
+	minPrice, err := strconv.Atoi(r.URL.Query().Get("min"))
+	maxPrice, err := strconv.Atoi(r.URL.Query().Get("max"))
+	if(r.URL.Query().Get("min") == ""){
+		minPrice = 0;
+	}
+	if(r.URL.Query().Get("max") == ""){
+		maxPrice = 999999999;
+	}
 	filter := bson.D{}
-	db := client.Database("go-assignment-2")
-	collection1 := db.Collection("products")
+	db1 := client.Database("go-assignment-2")
+	collection1 := db1.Collection("products")
 	// query to get all users
 	cursor, err := collection1.Find(context.Background(), filter)
 	if err != nil {
@@ -232,21 +244,16 @@ func productsPageHandler(w http.ResponseWriter, r *http.Request) {
 	defer cursor.Close(context.Background())
 
 	// Iterate through the cursor and print each user
-	var laptops []Laptop
-	for cursor.Next(context.Background()) {
-		var laptop Laptop
-		err := cursor.Decode(&laptop)
-		if err != nil {
-			fmt.Println(err)
-		}
-		laptops = append(laptops, laptop)
+	
 
+	// brands := []string{"Apple"}
+	
+	result, err := db.FindProductsWithFilters(brands, minPrice, maxPrice, sortBy)
+	if err != nil {
+		log.Fatal("Error calling FindProductsWithFilters: %v", err)
 	}
-	fmt.Println(len(laptops))
-	if err := cursor.Err(); err != nil {
-		fmt.Println(err)
-	}
-	fmt.Println("After MongoDB query")
+	fmt.Println(result);
+
 
 	// Render the HTML template with the fetched data
 	tmpl, err := template.ParseFiles("products.html")
@@ -256,7 +263,7 @@ func productsPageHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Execute the template with the list of ViewData items
-	tmpl.Execute(w, laptops)
+	tmpl.Execute(w, result)
 }
 func errorPageHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
