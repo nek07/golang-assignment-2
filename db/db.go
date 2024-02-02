@@ -3,11 +3,11 @@ package db
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	"regexp"
 
+	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -15,6 +15,12 @@ import (
 )
 
 const uri = "mongodb://localhost:27017/"
+
+var log = logrus.New()
+
+func init() {
+	log.SetFormatter(&logrus.JSONFormatter{})
+}
 
 var client *mongo.Client
 
@@ -43,34 +49,13 @@ func InsertData(u User) {
 		log.Fatal(err)
 	}
 
-	fmt.Println("Inserted a single document: ", insertResult.InsertedID)
+	log.WithFields(logrus.Fields{
+		"action":    "user_creation",
+		"result":    insertResult,
+		"timestamp": time.Now().Format(time.RFC3339),
+	}).Info("User created successfully")
 }
 
-/*
-	func GetProducts(ctx context.Context, client *mongo.Client,databaseName, collectionName) ([]laptops,error) {
-		cursor, err := collection1.Find(ctx, filter)
-		if err != nil {
-			fmt.Println(err)
-		}
-		defer cursor.Close(ctx)
-
-		// Iterate through the cursor and print each user
-		var laptops []Laptop
-		for cursor.Next(ctx) {
-			var laptop Laptop
-			err := cursor.Decode(&laptop)
-			if err != nil {
-				fmt.Println(err)
-			}
-			laptops = append(laptops, laptop)
-
-		}
-		fmt.Println(len(laptops))
-		if err := cursor.Err(); err != nil {
-			fmt.Println(err)
-		}
-	}
-*/
 func FindUserByID(ctx context.Context, client *mongo.Client, databaseName, collectionName, userIDHex string) (*User, error) {
 	collection := client.Database(databaseName).Collection(collectionName)
 
@@ -118,7 +103,12 @@ func UpdateUserUsernameByID(ctx context.Context, client *mongo.Client, databaseN
 	if updateResult.ModifiedCount == 0 {
 		return fmt.Errorf("user not found")
 	}
-
+	log.WithFields(logrus.Fields{
+		"action":      "user_update",
+		"userId":      userIDHex,
+		"newUsername": newUsername,
+		"timestamp":   time.Now().Format(time.RFC3339),
+	}).Info("User information updated successfully")
 	return nil
 }
 func DeleteUserByID(ctx context.Context, client *mongo.Client, databaseName, collectionName, userIDHex string) error {
@@ -142,6 +132,11 @@ func DeleteUserByID(ctx context.Context, client *mongo.Client, databaseName, col
 	if deleteResult.DeletedCount == 0 {
 		return fmt.Errorf("user not found")
 	}
+	log.WithFields(logrus.Fields{
+		"action":    "user_deletion",
+		"userId":    userIDHex,
+		"timestamp": time.Now().Format(time.RFC3339),
+	}).Info("User deleted successfully")
 
 	return nil
 }
@@ -198,12 +193,12 @@ func FindProductsWithFilters(brands []string, minPrice int, maxPrice int, sortBy
 	// Set up MongoDB client
 	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://localhost:27017"))
 	if err != nil {
-		return nil,0,  fmt.Errorf("Error creating MongoDB client: %v", err)
+		return nil, 0, fmt.Errorf("Error creating MongoDB client: %v", err)
 	}
 	ctx := context.TODO()
 	err = client.Connect(ctx)
 	if err != nil {
-		return nil,0,  fmt.Errorf("Error connecting to MongoDB: %v", err)
+		return nil, 0, fmt.Errorf("Error connecting to MongoDB: %v", err)
 	}
 	defer client.Disconnect(ctx)
 
@@ -231,9 +226,9 @@ func FindProductsWithFilters(brands []string, minPrice int, maxPrice int, sortBy
 	// Add price range filter
 	filter["price"] = bson.M{"$gte": minPrice, "$lte": maxPrice}
 	totalDocuments, err := collection.CountDocuments(ctx, filter)
-    if err != nil {
-        return nil, 0, fmt.Errorf("Error counting documents: %v", err)
-    }
+	if err != nil {
+		return nil, 0, fmt.Errorf("Error counting documents: %v", err)
+	}
 
 	// Build the options for sorting
 	options := options.Find()
@@ -248,7 +243,7 @@ func FindProductsWithFilters(brands []string, minPrice int, maxPrice int, sortBy
 	// Execute the find operation
 	cursor, err := collection.Find(ctx, filter, options)
 	if err != nil {
-		return nil,0,  fmt.Errorf("Error executing find operation: %v", err)
+		return nil, 0, fmt.Errorf("Error executing find operation: %v", err)
 	}
 	defer cursor.Close(ctx)
 
@@ -256,8 +251,16 @@ func FindProductsWithFilters(brands []string, minPrice int, maxPrice int, sortBy
 	var laptops []Laptop
 	err = cursor.All(ctx, &laptops)
 	if err != nil {
-		return nil,0, fmt.Errorf("Error decoding results: %v", err)
+		return nil, 0, fmt.Errorf("Error decoding results: %v", err)
 	}
-
+	log.WithFields(logrus.Fields{
+		"action":    "filter_products",
+		"brands":    brands,
+		"minPrice":  minPrice,
+		"maxPrice":  maxPrice,
+		"sortBy":    sortBy,
+		"page":      page,
+		"timestamp": time.Now().Format(time.RFC3339),
+	}).Info("User filtered products")
 	return laptops, totalDocuments, nil
 }

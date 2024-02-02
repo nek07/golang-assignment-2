@@ -1,0 +1,3 @@
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-02-02T08:48:42+06:00","timestamp":"2024-02-02T08:48:42+06:00"}
+{"action":"filter_products","brands":["Lenovo"],"level":"info","maxPrice":5000000,"minPrice":0,"msg":"User filtered products","page":1,"sortBy":"","time":"2024-02-02T08:48:48+06:00","timestamp":"2024-02-02T08:48:48+06:00"}
+{"action":"filter_products","brands":[""],"level":"info","maxPrice":5000000,"minPrice":460000,"msg":"User filtered products","page":1,"sortBy":"","time":"2024-02-02T08:48:53+06:00","timestamp":"2024-02-02T08:48:53+06:00"}

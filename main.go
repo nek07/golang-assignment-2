@@ -5,12 +5,19 @@ import (
 	_ "context"
 	"encoding/json"
 	"fmt"
-	"log"
+	"io"
+	"io/ioutil"
 	_ "log"
 	"net/http"
+	"os"
 	"time"
 
 	_ "github.com/joho/godotenv/autoload"
+
+	"ass3/db"
+	"html/template" //end damir
+	"strconv"
+	"strings" //Damir
 
 	_ "github.com/eminetto/mongo-migrate"
 	"go.mongodb.org/mongo-driver/bson"
@@ -18,11 +25,10 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"golang.org/x/time/rate"
 
-	"ass3/db"
-	"html/template" //end damir
-	"strconv"
-	"strings" //Damir
+	"github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus/hooks/writer"
 )
 
 type User struct {
@@ -36,15 +42,50 @@ type User struct {
 }
 type Data struct {
 	DocumentCount int64 `json:"DocumentCount"`
-	Laptops []db.Laptop
+	Laptops       []db.Laptop
 }
 
 const uri = "mongodb://localhost:27017/"
 
 var client *mongo.Client
 
+var log = logrus.New()
+var limiter = rate.NewLimiter(1, 3) // Rate limit of 1 request per second with a burst of 3 requests
+
+func init() {
+	// Set log formatter
+	log.SetFormatter(&logrus.JSONFormatter{})
+
+	// Create a log file or open existing
+	logfile, err := os.OpenFile("logs.txt", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Set up the File hook for the logrus logger
+	log.AddHook(&writer.Hook{
+		Writer: logfile,
+		LogLevels: []logrus.Level{
+			logrus.InfoLevel,
+			logrus.WarnLevel,
+			logrus.ErrorLevel,
+			logrus.FatalLevel,
+			logrus.PanicLevel,
+		},
+	})
+
+	// Close the log file when the application exits
+	defer logfile.Close()
+}
+
 func main() {
 	uri := uri
+	file, _ := os.OpenFile("logs.txt", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+
+	defer file.Close()
+
+	mw := io.MultiWriter(os.Stdout, file)
+	log.SetOutput(mw)
 
 	// Create client options
 	clientOptions := options.Client().ApplyURI(uri)
@@ -54,7 +95,10 @@ func main() {
 	if err != nil {
 		log.Fatal("Error creating MongoDB client:", err)
 	}
-
+	log.WithFields(logrus.Fields{
+		"action":    "server_access",
+		"timestamp": time.Now().Format(time.RFC3339),
+	}).Info("Client accessed the server")
 	// Create context
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
@@ -81,7 +125,7 @@ func main() {
 	fmt.Println("Migration executed successfully.")
 
 	//server
-	http.HandleFunc("/", homeHandler)
+	http.HandleFunc("/", rateLimitedHandler(homeHandler))
 	http.HandleFunc("/submit", submitHandler)
 	http.HandleFunc("/error", errorPageHandler) // Damir end and start
 	http.HandleFunc("/crud", crudHandler)
@@ -90,7 +134,7 @@ func main() {
 	http.HandleFunc("/deleteUser", handleDeleteUser)
 	http.HandleFunc("/getAllUsers", handleGetAllUsers)
 
-	http.HandleFunc("/products", productsPageHandler)
+	http.HandleFunc("/products", rateLimitedHandler(productsPageHandler))
 
 	port := 8080
 	fmt.Printf("Server is running on http://localhost:%d\n", port)
@@ -102,11 +146,39 @@ func main() {
 	// Disconnect from MongoDB
 	err = client.Disconnect(ctx)
 	if err != nil {
-		log.Fatal(err)
+		log.WithError(err).Error("Error disconnecting from MongoDB")
 	}
 
 }
 
+func rateLimitedHandler(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if !limiter.Allow() {
+			// Exceeded request limit
+			log.WithFields(logrus.Fields{
+				"action":    "rate_limit_exceeded",
+				"timestamp": time.Now().Format(time.RFC3339),
+			}).Error("Rate limit exceeded")
+
+			// Read the HTML template content
+			htmlContent, err := ioutil.ReadFile("rateLimited.html")
+			if err != nil {
+				log.WithError(err).Error("Error reading HTML template")
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+				return
+			}
+
+			// Set the content type to HTML
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+			// Write the HTML content to the response
+			w.WriteHeader(http.StatusTooManyRequests)
+			w.Write(htmlContent)
+			return
+		}
+		next(w, r)
+	}
+}
 func homeHandler(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" { //Damir
 		error404PageHandler(w, r)
@@ -136,6 +208,7 @@ func submitHandler(w http.ResponseWriter, r *http.Request) {
 		user := getData(r.FormValue("name"), r.FormValue("email"), r.FormValue("username"), r.FormValue("password"))
 
 		errors := checkForm(user.Name, user.Email, user.Username, user.Password, r.FormValue("confirm-password")) //Damir
+
 		if errors.NameError != "" || errors.EmailError != "" || errors.UsernameError != "" ||
 			errors.PasswordError != "" || errors.ConfirmPasswordError != "" {
 			tmpl, err := template.ParseFiles("error.html")
@@ -145,6 +218,11 @@ func submitHandler(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
+			log.WithFields(logrus.Fields{
+				"action":    "user_submission",
+				"username":  user.Username,
+				"timestamp": time.Now().Format(time.RFC3339),
+			}).Info("User submitted the form")
 			err = tmpl.Execute(w, errors)
 			if err != nil {
 				http.Error(w, "Error rendering error page", http.StatusInternalServerError)
@@ -252,11 +330,21 @@ func productsPageHandler(w http.ResponseWriter, r *http.Request) {
 	// brands := []string{"Apple"}
 
 	result, count, err := db.FindProductsWithFilters(brands, minPrice, maxPrice, sortBy, page)
+	// Log product filtering
+	log.WithFields(logrus.Fields{
+		"action":    "filter_products",
+		"brands":    brands,
+		"minPrice":  minPrice,
+		"maxPrice":  maxPrice,
+		"sortBy":    sortBy,
+		"page":      page,
+		"timestamp": time.Now().Format(time.RFC3339),
+	}).Info("User filtered products")
 	if err != nil {
 		log.Fatal("Error calling FindProductsWithFilters: %v", err)
 	}
 	data := Data{
-		Laptops: result,
+		Laptops:       result,
 		DocumentCount: count,
 	}
 	// Render the HTML template with the fetched data
