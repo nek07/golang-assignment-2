@@ -40,13 +40,14 @@ type Laptop struct {
 	Price       int    `bson:"price"`
 }
 
-func InsertData(u User) {
+func InsertData(u User) error {
 	collection := client.Database("go-assignment-2").Collection("users")
 
 	// Insert user data into the MongoDB collection
 	insertResult, err := collection.InsertOne(context.TODO(), u)
 	if err != nil {
-		log.Fatal(err)
+		log.WithError(err).Error("Error inserting data into MongoDB")
+		return err
 	}
 
 	log.WithFields(logrus.Fields{
@@ -54,6 +55,8 @@ func InsertData(u User) {
 		"result":    insertResult,
 		"timestamp": time.Now().Format(time.RFC3339),
 	}).Info("User created successfully")
+
+	return nil
 }
 
 func FindUserByID(ctx context.Context, client *mongo.Client, databaseName, collectionName, userIDHex string) (*User, error) {
@@ -74,9 +77,9 @@ func FindUserByID(ctx context.Context, client *mongo.Client, databaseName, colle
 	if err == mongo.ErrNoDocuments {
 		return nil, fmt.Errorf("user not found")
 	} else if err != nil {
+		log.WithError(err).Error("Error finding user by ID")
 		return nil, err
 	}
-
 	return &user, nil
 }
 func UpdateUserUsernameByID(ctx context.Context, client *mongo.Client, databaseName, collectionName, userIDHex string, newUsername string) error {
@@ -170,7 +173,10 @@ func GetAllUsers(ctx context.Context, client *mongo.Client, databaseName, collec
 	if err := cursor.Err(); err != nil {
 		return nil, err
 	}
-
+	log.WithFields(logrus.Fields{
+		"action":    "get_all_users",
+		"timestamp": time.Now().Format(time.RFC3339),
+	}).Info("Retrieved all users successfully")
 	return users, nil
 }
 func AddNewField(ctx context.Context, client *mongo.Client) error {
@@ -182,8 +188,10 @@ func AddNewField(ctx context.Context, client *mongo.Client) error {
 	if err != nil {
 		return err
 	}
-
-	fmt.Println("Migration Up completed successfully.")
+	log.WithFields(logrus.Fields{
+		"action":    "migration_up",
+		"timestamp": time.Now().Format(time.RFC3339),
+	}).Info("Migration Up completed successfully.")
 	return nil
 }
 func FindProductsWithFilters(brands []string, minPrice int, maxPrice int, sortBy string, page int) ([]Laptop, int64, error) {

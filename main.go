@@ -82,8 +82,6 @@ func main() {
 	uri := uri
 	file, _ := os.OpenFile("logs.txt", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 
-	defer file.Close()
-
 	mw := io.MultiWriter(os.Stdout, file)
 	log.SetOutput(mw)
 
@@ -106,33 +104,34 @@ func main() {
 	// Connect to MongoDB
 	err = client.Connect(ctx)
 	if err != nil {
-		log.Fatal(err)
+		log.WithError(err).Fatal("Error connecting to MongoDB")
 	}
 
 	// Check the connection
 	err = client.Ping(ctx, nil)
 	if err != nil {
-		log.Fatal(err)
+		log.WithError(err).Fatal("Error pinging MongoDB")
 	}
 
 	fmt.Println("Connected to MongoDB Atlas!")
+
+	// Perform migration
 	err = db.AddNewField(ctx, client)
 	if err != nil {
-		fmt.Println("Error during migration:", err)
-		return
+		log.WithError(err).Fatal("Error during migration")
 	}
 
 	fmt.Println("Migration executed successfully.")
 
 	//server
 	http.HandleFunc("/", rateLimitedHandler(homeHandler))
-	http.HandleFunc("/submit", submitHandler)
-	http.HandleFunc("/error", errorPageHandler) // Damir end and start
-	http.HandleFunc("/crud", crudHandler)
-	http.HandleFunc("/getUser", handleGetUser)
-	http.HandleFunc("/updateUser", handleUpdateUser)
-	http.HandleFunc("/deleteUser", handleDeleteUser)
-	http.HandleFunc("/getAllUsers", handleGetAllUsers)
+	http.HandleFunc("/submit", rateLimitedHandler(submitHandler))
+	http.HandleFunc("/error", rateLimitedHandler(errorPageHandler)) // Damir end and start
+	http.HandleFunc("/crud", rateLimitedHandler(crudHandler))
+	http.HandleFunc("/getUser", rateLimitedHandler(handleGetUser))
+	http.HandleFunc("/updateUser", rateLimitedHandler(handleUpdateUser))
+	http.HandleFunc("/deleteUser", rateLimitedHandler(handleDeleteUser))
+	http.HandleFunc("/getAllUsers", rateLimitedHandler(handleGetAllUsers))
 
 	http.HandleFunc("/products", rateLimitedHandler(productsPageHandler))
 
@@ -140,7 +139,7 @@ func main() {
 	fmt.Printf("Server is running on http://localhost:%d\n", port)
 	err1 := http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
 	if err1 != nil {
-		fmt.Println("Error:", err1)
+		log.WithError(err1).Error("Error starting server")
 	}
 
 	// Disconnect from MongoDB
