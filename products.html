@@ -171,7 +171,6 @@
       {{ range .Laptops }}
       <div class="profile-card">
         <!-- Image on the left side -->
-        <img  alt="Profile Image" class="profile-image">
 
         <!-- Content on the right side -->
         <div class="profile-content">
@@ -222,10 +221,10 @@
    <script>
     document.getElementById('applyFilters').addEventListener('click', function () {
       // Get selected values
-      var brand = document.getElementById('categoryFilter').value;
-      var minPrice = document.getElementById('minPriceRange').value;
-      var maxPrice = document.getElementById('maxPriceRange').value;
-      var sortBy = document.getElementById('sortFilter').value;
+      var brand = document.getElementById('categoryFilter').value || "";
+      var minPrice = document.getElementById('minPriceRange').value || "";
+      var maxPrice = document.getElementById('maxPriceRange').value || "";
+      var sortBy = document.getElementById('sortFilter').value || "";
       var page = currentPage;
 
       // Construct the URL
@@ -251,10 +250,10 @@
         redirectOnPage(++currentPage)
     });
     function redirectOnPage(page){
-      window.location.href = '/products?brand=' + params.get('brand') +
-        '&min=' + params.get('min') +
-        '&max=' + params.get('max') +
-        '&sort=' + params.get('sort') +
+      window.location.href = '/products?brand=' + (params.get('brand') || "") +
+        '&min=' + (params.get('min')  || "") +
+        '&max=' + (params.get('max')  || "")+
+        '&sort=' + (params.get('sort') || "") +
         '&page=' + page;
     }
     function createPaginationButtons(){
