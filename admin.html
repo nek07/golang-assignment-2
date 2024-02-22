@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Admin Panel - Product Management</h1>
+
+        <!-- Form for adding a new product -->
+        <form action="/admin/add" method="POST">
+            <h2>Add New Product</h2>
+            <div class="form-group">
+                <label for="productName">Product Name:</label>
+                <input type="text" class="form-control" id="productName" name="productName" required>
+            </div>
+            <div class="form-group">
+                <label for="productPrice">Product Price:</label>
+                <input type="number" class="form-control" id="productPrice" name="productPrice" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Add Product</button>
+        </form>
+
+        <hr>
+
+        <!-- Table for displaying existing products -->
+        <h2>Product List</h2>
+        <div class="container mt-3 filters-container w-100" style="display: flex; justify-content: space-between;">
+            <label for="categoryFilter" class="filter-dropdown">Brand:
+              <select id="categoryFilter">  
+                <option value="">All</option>
+                <option value="Apple">Apple</option>
+                <option value="Acer">Acer</option>
+                <option value="Asus">Asus</option>
+                <option value="Lenovo">Lenovo</option>
+                <option value="MSI">MSI</option>
+                <option value="Dell">Dell</option>
+                <option value="HP">HP</option>
+                <option value="Razer">Razer</option>
+        
+        
+                <!-- Add more categories as needed -->
+              </select>
+            </label>
+            <label for="priceRange" class="filter-dropdown">Price:
+              <input type="range" id="minPriceRange" class="price-range" min="0" max="5000000" step="10000" value="0">
+              <input type="range" id="maxPriceRange" class="price-range" min="0" max="5000000" step="10000" value="5000000">
+              <span>Min:<span class="price-output" id="minPriceOutput">0</span>T</span>
+              <span>Max:<span class="price-output" id="maxPriceOutput">5000000</span>T</span>
+            </label>
+            <label for="sortFilter" class="sort-dropdown">Sort by:
+              <select id="sortFilter">
+                <option value=""></option>
+                <option value="asc">Price Ascending</option>
+                <option value="desc">Price Descending</option>
+              </select>
+            </label>
+            <!-- Add more filters as needed -->
+            <button id="applyFilters" class="btn btn-info">Apply Filters</button>
+          </div>
+
+          <h2 class="text-center">Найдено: <span id="laptopsCount">{{.DocumentCount}}</span></h2>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Product ID</th>
+                    <th>Name</th>
+                    <th>Price</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{range .Laptops}}
+                <tr>
+                    <td>{{.Brand}}</td>
+                    <td>{{.Model}}</td>
+                    <td>{{.Price}}</td>
+                    <td>
+                        <a href="/admin/edit/{{.ID}}" class="btn btn-primary">Edit</a>
+                        <a href="/admin/delete/{{.ID}}" class="btn btn-danger">Delete</a>
+                    </td>
+                </tr>
+                {{end}}
+            </tbody>
+        </table>
+        <div id="pagination" class="mt-3 mb-3" style="display: flex; width: 100%; justify-content: space-between;">
+            <button id="prevPage" class="btn btn-outline-info">Previous Page</button>
+            <div id="pageButtons">
+        
+            </div>
+            <button id="nextPage" class="btn btn-outline-info">Next Page</button>
+          </div>    
+    </div>
+    
+
+    <script>
+        document.getElementById('applyFilters').addEventListener('click', function () {
+          // Get selected values
+          var brand = document.getElementById('categoryFilter').value || "";
+          var minPrice = document.getElementById('minPriceRange').value || "";
+          var maxPrice = document.getElementById('maxPriceRange').value || "";
+          var sortBy = document.getElementById('sortFilter').value || "";
+          var page = currentPage;
+    
+          // Construct the URL
+          var url = '/admin?brand=' + brand +
+            '&min=' + minPrice +
+            '&max=' + maxPrice +
+            '&sort=' + sortBy +
+            '&page=' + 1;
+    
+          window.location.href = url;
+        })
+        let params = new URLSearchParams(location.search);
+        var currentPage = params.get('page');
+        if(currentPage !== 1){
+          document.getElementById('prevPage').addEventListener('click', function () {
+          if (currentPage > 1) {
+            redirectOnPage(--currentPage);
+          }
+        });
+        }
+        document.getElementById('nextPage').addEventListener('click', function () {
+          if (currentPage < document.getElementById('laptopsCount').innerHTML / 10)
+            redirectOnPage(++currentPage)
+        });
+        function redirectOnPage(page){
+          window.location.href = '/admin?brand=' + (params.get('brand') || "") +
+            '&min=' + (params.get('min')  || "") +
+            '&max=' + (params.get('max')  || "")+
+            '&sort=' + (params.get('sort') || "") +
+            '&page=' + page;
+        }
+        function createPaginationButtons(){
+          const pageDiv = document.getElementById('pageButtons')
+          const laptopsCount = document.getElementById('laptopsCount').innerHTML;
+          for(let i = 0; i <= laptopsCount / 10; i++){
+            if(currentPage == i + 1){
+              pageDiv.innerHTML += '<button class="btn btn-secondary m-2" disabled>'+ (i + 1) +'</button>'
+            }else{
+              pageDiv.innerHTML += '<button class="btn btn-outline-secondary m-2" onclick="redirectOnPage('+ (i+1) +')">'+ (i+1) +'</button>'
+            }
+          }
+        }
+        createPaginationButtons()
+      </script>
+</body>
+</html>

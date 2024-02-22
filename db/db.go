@@ -34,6 +34,7 @@ type User struct {
 	Updated_at time.Time
 }
 type Laptop struct {
+	ID          primitive.ObjectID `bson:"_id"`
 	Brand       string `bson:"brand"`
 	Model       string `bson:"model"`
 	Description string `bson:"description"`

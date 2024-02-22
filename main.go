@@ -132,7 +132,7 @@ func main() {
 	http.HandleFunc("/updateUser", rateLimitedHandler(handleUpdateUser))
 	http.HandleFunc("/deleteUser", rateLimitedHandler(handleDeleteUser))
 	http.HandleFunc("/getAllUsers", rateLimitedHandler(handleGetAllUsers))
-
+	http.HandleFunc("/admin", rateLimitedHandler(handleAdmin))
 	http.HandleFunc("/products", rateLimitedHandler(productsPageHandler))
 
 	port := 8080
@@ -450,4 +450,35 @@ func respondWithJSON(w http.ResponseWriter, data interface{}) {
 	// Respond with user data in JSON format
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(data)
+}
+func handleAdmin(w http.ResponseWriter, r *http.Request){
+	brands := []string{r.URL.Query().Get("brand")}
+	sortBy := r.URL.Query().Get("sort")
+	minPrice, err := strconv.Atoi(r.URL.Query().Get("min"))
+	maxPrice, err := strconv.Atoi(r.URL.Query().Get("max"))
+	page, _ := strconv.Atoi(r.URL.Query().Get("page"))
+
+	if page <= 0 {
+		page = 1
+	}
+
+	if r.URL.Query().Get("min") == "" {
+		minPrice = 0
+	}
+	if r.URL.Query().Get("max") == "" {
+		maxPrice = 999999999
+	}
+	result, count, _ := db.FindProductsWithFilters(brands, minPrice, maxPrice, sortBy, page);
+	fmt.Println(result)
+	tmpl, err := template.ParseFiles("admin.html")
+	if err != nil {
+		fmt.Println("Error parsing HTML template:", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+	}
+	data := Data{
+		Laptops:       result,
+		DocumentCount: count,
+	}
+	// Execute the template with the list of ViewData items
+	tmpl.Execute(w, data)
 }
