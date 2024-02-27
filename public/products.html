@@ -15,10 +15,11 @@
     /* Import Montserrat font from Google Fonts */
     @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
 
-    /* Apply Montserrat font to all elements */
-    body {
-      font-family: 'Montserrat', sans-serif;
-    }
+        /* Apply Montserrat font to all elements */
+        body {
+            font-family: 'Montserrat', sans-serif !important;
+          
+        }
 
     /* Apply Montserrat font to specific elements */
     h1,
@@ -111,14 +112,33 @@
 
 <body>
   <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <a class="navbar-brand" href="#">DosYan shop</a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
-      aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-
-  </nav>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark p-3">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">minima.</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+    
+      <div class=" collapse navbar-collapse" id="navbarNavDropdown">
+        <ul class="navbar-nav ml-auto ">
+          <li class="nav-item">
+            <a class="nav-link mx-2 active" aria-current="page" href="#">Products</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link mx-2" href="#">Support</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link mx-2" href="#">Cart</a>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link mx-2" href="#" id="navbarDropdownMenuLink">Login
+            </a>
+    
+          </li>
+        </ul>
+      </div>
+    </div>
+    </nav>
   <div class="container mt-3 filters-container w-100" style="display: flex; justify-content: space-between;">
     <label for="categoryFilter" class="filter-dropdown">Brand:
       <select id="categoryFilter">  
@@ -199,8 +219,8 @@
 </div>
   <!-- Footer -->
   <footer class="bg-dark text-white text-center py-3">
-    &copy; 2024 Paw Request Hub. All rights reserved.
-  </footer>
+    &copy; 2024 minima. All rights reserved.
+</footer>
   <script>
     document.addEventListener("DOMContentLoaded", function () {
       const minPriceRange = document.getElementById("minPriceRange");

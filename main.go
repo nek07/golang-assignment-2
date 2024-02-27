@@ -160,7 +160,7 @@ func rateLimitedHandler(next http.HandlerFunc) http.HandlerFunc {
 			}).Error("Rate limit exceeded")
 
 			// Read the HTML template content
-			htmlContent, err := ioutil.ReadFile("rateLimited.html")
+			htmlContent, err := ioutil.ReadFile("public/rateLimited.html")
 			if err != nil {
 				log.WithError(err).Error("Error reading HTML template")
 				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -185,7 +185,7 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 	} // end damir
 
 	if r.Method == http.MethodGet {
-		http.ServeFile(w, r, "form.html")
+		http.ServeFile(w, r, "public/form.html")
 	} else {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
@@ -210,7 +210,7 @@ func submitHandler(w http.ResponseWriter, r *http.Request) {
 
 		if errors.NameError != "" || errors.EmailError != "" || errors.UsernameError != "" ||
 			errors.PasswordError != "" || errors.ConfirmPasswordError != "" {
-			tmpl, err := template.ParseFiles("error.html")
+			tmpl, err := template.ParseFiles("public/error.html")
 			if err != nil {
 				http.Error(w, "Error rendering error page", http.StatusInternalServerError)
 				log.Println("Error rendering error page:", err)
@@ -347,7 +347,7 @@ func productsPageHandler(w http.ResponseWriter, r *http.Request) {
 		DocumentCount: count,
 	}
 	// Render the HTML template with the fetched data
-	tmpl, err := template.ParseFiles("products.html")
+	tmpl, err := template.ParseFiles("public/products.html")
 	if err != nil {
 		fmt.Println("Error parsing HTML template:", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -358,21 +358,21 @@ func productsPageHandler(w http.ResponseWriter, r *http.Request) {
 }
 func errorPageHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
-		http.ServeFile(w, r, "error.html")
+		http.ServeFile(w, r, "public/error.html")
 	} else {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
 }
 func error404PageHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
-		http.ServeFile(w, r, "error404.html")
+		http.ServeFile(w, r, "public/error404.html")
 	} else {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
 } //end damir
 func crudHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
-		http.ServeFile(w, r, "crud.html")
+		http.ServeFile(w, r, "public/crud.html")
 	} else {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
@@ -451,7 +451,7 @@ func respondWithJSON(w http.ResponseWriter, data interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(data)
 }
-func handleAdmin(w http.ResponseWriter, r *http.Request){
+func handleAdmin(w http.ResponseWriter, r *http.Request) {
 	brands := []string{r.URL.Query().Get("brand")}
 	sortBy := r.URL.Query().Get("sort")
 	minPrice, err := strconv.Atoi(r.URL.Query().Get("min"))
@@ -468,9 +468,9 @@ func handleAdmin(w http.ResponseWriter, r *http.Request){
 	if r.URL.Query().Get("max") == "" {
 		maxPrice = 999999999
 	}
-	result, count, _ := db.FindProductsWithFilters(brands, minPrice, maxPrice, sortBy, page);
+	result, count, _ := db.FindProductsWithFilters(brands, minPrice, maxPrice, sortBy, page)
 	fmt.Println(result)
-	tmpl, err := template.ParseFiles("admin.html")
+	tmpl, err := template.ParseFiles("public/admin.html")
 	if err != nil {
 		fmt.Println("Error parsing HTML template:", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
