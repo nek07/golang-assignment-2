@@ -1,4 +1,4 @@
-# Migrations and Advanced Crud Operations Project
+# Minima laptop store
 ## Participants
 - Abylai Taitoleuov 🤖
 - Asainov Damir 🏆
