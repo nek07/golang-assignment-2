@@ -4,22 +4,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DosYan Shop</title>
+  <title>minima.</title>
+  <link rel="shortcut icon" href="../design/android-chrome-512x512.png">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap">
-  <link rel="stylesheet"
-    href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
-    integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
-    crossorigin="anonymous">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+    integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
   <style>
     /* Styles for the card container */
     /* Import Montserrat font from Google Fonts */
     @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
 
-        /* Apply Montserrat font to all elements */
-        body {
-            font-family: 'Montserrat', sans-serif !important;
-          
-        }
+    /* Apply Montserrat font to all elements */
+    body {
+      font-family: 'Montserrat', sans-serif !important;
+
+    }
 
     /* Apply Montserrat font to specific elements */
     h1,
@@ -87,6 +86,7 @@
       font-size: 12px;
       color: #777;
     }
+
     .filters-container {
       margin-bottom: 20px;
     }
@@ -104,10 +104,8 @@
       margin-left: 10px;
     }
   </style>
-  <link rel="stylesheet"
-    href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
-    integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
-    crossorigin="anonymous">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+    integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 </head>
 
 <body>
@@ -115,10 +113,11 @@
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark p-3">
     <div class="container-fluid">
       <a class="navbar-brand" href="#">minima.</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown"
+        aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
-    
+
       <div class=" collapse navbar-collapse" id="navbarNavDropdown">
         <ul class="navbar-nav ml-auto ">
           <li class="nav-item">
@@ -133,15 +132,15 @@
           <li class="nav-item dropdown">
             <a class="nav-link mx-2" href="#" id="navbarDropdownMenuLink">Login
             </a>
-    
+
           </li>
         </ul>
       </div>
     </div>
-    </nav>
+  </nav>
   <div class="container mt-3 filters-container w-100" style="display: flex; justify-content: space-between;">
     <label for="categoryFilter" class="filter-dropdown">Brand:
-      <select id="categoryFilter">  
+      <select id="categoryFilter">
         <option value="">All</option>
         <option value="Apple">Apple</option>
         <option value="Acer">Acer</option>
@@ -181,46 +180,46 @@
     <!-- Add more filters as needed -->
     <button id="applyFilters" class="btn btn-info">Apply Filters</button>
   </div>
-  
+
   <!-- Product Cards -->
   <div class="container mt-5">
     <h2 class="text-center">Найдено: <span id="laptopsCount">{{.DocumentCount}}</span></h2>
     <div class="row">
-        <div class="container mt-5">
-            <div class="row">
-      {{ range .Laptops }}
-      <div class="profile-card">
-        <!-- Image on the left side -->
+      <div class="container mt-5">
+        <div class="row">
+          {{ range .Laptops }}
+          <div class="profile-card" onclick="openInfoPage('{{.ID}}')">
+            <!-- Image on the left side -->
 
-        <!-- Content on the right side -->
-        <div class="profile-content">
-            <!-- Name -->
-            <div class="profile-name">{{ .Brand }}</div>
-            <span class="profile-age">• {{ .Model }} •</span>
-            
-            <!-- Description -->
-            <div class="profile-description">{{ .Description }}</div>
-            <hr>
-            <span class="profile-location">• {{ .Price }}</span>
+            <!-- Content on the right side -->
+            <div class="profile-content">
+              <!-- Name -->
+              <div class="profile-name">{{ .Brand }}</div>
+              <span class="profile-age">• {{ .Model }} •</span>
+
+              <!-- Description -->
+              <div class="profile-description">{{ .Description }}</div>
+              <hr>
+              <span class="profile-location">• {{ .Price }}</span>
+            </div>
+
+          </div>
+          {{ end }}
         </div>
-        
-    </div>
-    {{ end }}
-  </div>
-  <div id="pagination" class="mt-3 mb-3" style="display: flex; width: 100%; justify-content: space-between;">
-    <button id="prevPage" class="btn btn-outline-info">Previous Page</button>
-    <div id="pageButtons">
+        <div id="pagination" class="mt-3 mb-3" style="display: flex; width: 100%; justify-content: space-between;">
+          <button id="prevPage" class="btn btn-outline-info">Previous Page</button>
+          <div id="pageButtons">
 
+          </div>
+          <button id="nextPage" class="btn btn-outline-info">Next Page</button>
+        </div>
+      </div>
     </div>
-    <button id="nextPage" class="btn btn-outline-info">Next Page</button>
   </div>
-</div>
-</div>
-</div>
   <!-- Footer -->
   <footer class="bg-dark text-white text-center py-3">
     &copy; 2024 minima. All rights reserved.
-</footer>
+  </footer>
   <script>
     document.addEventListener("DOMContentLoaded", function () {
       const minPriceRange = document.getElementById("minPriceRange");
@@ -238,7 +237,10 @@
       }
     });
   </script>
-   <script>
+  <script>
+    function openInfoPage(id){
+      window.location.href = "/product/" + id;
+    }
     document.getElementById('applyFilters').addEventListener('click', function () {
       // Get selected values
       var brand = document.getElementById('categoryFilter').value || "";
@@ -258,32 +260,32 @@
     })
     let params = new URLSearchParams(location.search);
     var currentPage = params.get('page');
-    if(currentPage !== 1){
+    if (currentPage !== 1) {
       document.getElementById('prevPage').addEventListener('click', function () {
-      if (currentPage > 1) {
-        redirectOnPage(--currentPage);
-      }
-    });
+        if (currentPage > 1) {
+          redirectOnPage(--currentPage);
+        }
+      });
     }
     document.getElementById('nextPage').addEventListener('click', function () {
       if (currentPage < document.getElementById('laptopsCount').innerHTML / 10)
         redirectOnPage(++currentPage)
     });
-    function redirectOnPage(page){
+    function redirectOnPage(page) {
       window.location.href = '/products?brand=' + (params.get('brand') || "") +
-        '&min=' + (params.get('min')  || "") +
-        '&max=' + (params.get('max')  || "")+
+        '&min=' + (params.get('min') || "") +
+        '&max=' + (params.get('max') || "") +
         '&sort=' + (params.get('sort') || "") +
         '&page=' + page;
     }
-    function createPaginationButtons(){
+    function createPaginationButtons() {
       const pageDiv = document.getElementById('pageButtons')
       const laptopsCount = document.getElementById('laptopsCount').innerHTML;
-      for(let i = 0; i <= laptopsCount / 10; i++){
-        if(currentPage == i + 1){
-          pageDiv.innerHTML += '<button class="btn btn-secondary m-2" disabled>'+ (i + 1) +'</button>'
-        }else{
-          pageDiv.innerHTML += '<button class="btn btn-outline-secondary m-2" onclick="redirectOnPage('+ (i+1) +')">'+ (i+1) +'</button>'
+      for (let i = 0; i <= laptopsCount / 10; i++) {
+        if (currentPage == i + 1) {
+          pageDiv.innerHTML += '<button class="btn btn-secondary m-2" disabled>' + (i + 1) + '</button>'
+        } else {
+          pageDiv.innerHTML += '<button class="btn btn-outline-secondary m-2" onclick="redirectOnPage(' + (i + 1) + ')">' + (i + 1) + '</button>'
         }
       }
     }

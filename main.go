@@ -27,6 +27,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"golang.org/x/time/rate"
 
+	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 	"github.com/sirupsen/logrus/hooks/writer"
 )
@@ -123,25 +124,30 @@ func main() {
 
 	fmt.Println("Migration executed successfully.")
 
-	//server
-	http.HandleFunc("/", rateLimitedHandler(homeHandler))
-	http.HandleFunc("/submit", rateLimitedHandler(submitHandler))
-	http.HandleFunc("/error", rateLimitedHandler(errorPageHandler)) // Damir end and start
-	http.HandleFunc("/crud", rateLimitedHandler(crudHandler))
-	http.HandleFunc("/getUser", rateLimitedHandler(handleGetUser))
-	http.HandleFunc("/updateUser", rateLimitedHandler(handleUpdateUser))
-	http.HandleFunc("/deleteUser", rateLimitedHandler(handleDeleteUser))
-	http.HandleFunc("/getAllUsers", rateLimitedHandler(handleGetAllUsers))
-	http.HandleFunc("/admin", rateLimitedHandler(handleAdmin))
-	http.HandleFunc("/products", rateLimitedHandler(productsPageHandler))
+	r := mux.NewRouter()
+
+	// Регистрация обработчиков для маршрутов
+	r.HandleFunc("/", rateLimitedHandler(homeHandler))
+	r.HandleFunc("/submit", rateLimitedHandler(submitHandler))
+	r.HandleFunc("/error", rateLimitedHandler(errorPageHandler))
+	r.HandleFunc("/crud", rateLimitedHandler(crudHandler))
+	r.HandleFunc("/getUser", rateLimitedHandler(handleGetUser))
+	r.HandleFunc("/updateUser", rateLimitedHandler(handleUpdateUser))
+	r.HandleFunc("/deleteUser", rateLimitedHandler(handleDeleteUser))
+	r.HandleFunc("/getAllUsers", rateLimitedHandler(handleGetAllUsers))
+	r.HandleFunc("/admin", rateLimitedHandler(handleAdmin))
+	r.HandleFunc("/products", rateLimitedHandler(productsPageHandler))
+	r.HandleFunc("/product/{id}", handleConcreteProduct)
+	r.HandleFunc("/admin/delete/{id}", rateLimitedHandler(handleDeleteProduct))
+	r.HandleFunc("/admin/edit/{id}", rateLimitedHandler(handleEditProduct))
 
 	port := 8080
 	fmt.Printf("Server is running on http://localhost:%d\n", port)
-	err1 := http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
-	if err1 != nil {
-		log.WithError(err1).Error("Error starting server")
+	// Использование маршрутизатора вместо http.ListenAndServe
+	err = http.ListenAndServe(fmt.Sprintf(":%d", port), r)
+	if err != nil {
+		log.WithError(err).Error("Error starting server")
 	}
-
 	// Disconnect from MongoDB
 	err = client.Disconnect(ctx)
 	if err != nil {
@@ -481,4 +487,75 @@ func handleAdmin(w http.ResponseWriter, r *http.Request) {
 	}
 	// Execute the template with the list of ViewData items
 	tmpl.Execute(w, data)
+}
+func handleConcreteProduct(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	laptopID := vars["id"]
+	laptop, err := db.FindProductById(laptopID)
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+	tmpl, err := template.ParseFiles("public/concreateProduct.html")
+	if err != nil {
+		fmt.Println("Error parsing HTML template:", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+	}
+	tmpl.Execute(w, laptop)
+}
+func handleDeleteProduct(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodDelete {
+		vars := mux.Vars(r)
+		laptopID := vars["id"]
+		err := db.DeleteProduct(laptopID)
+		if err != nil {
+			respondWithMessage(w, "Error with Delete Product")
+		}
+		respondWithMessage(w, "Successfully delete product with '"+laptopID+"' id")
+	} else {
+		error404PageHandler(w, r)
+	}
+}
+func handleEditProduct(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	laptopID := vars["id"]
+
+	if r.Method == http.MethodGet {
+		laptop, err := db.FindProductById(laptopID)
+		if err != nil {
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+		tmpl, err := template.ParseFiles("public/productEdit.html")
+		if err != nil {
+			fmt.Println("Error parsing HTML template:", err)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		}
+		tmpl.Execute(w, laptop)
+	} else if r.Method == http.MethodPut {
+		id := r.FormValue("id")
+		brand := r.FormValue("brand")
+		model := r.FormValue("model")
+		description := r.FormValue("description")
+		price, err := strconv.Atoi(r.FormValue("price"))
+		if err != nil {
+			http.Error(w, "Invalid price", http.StatusBadRequest)
+			return
+		}
+
+		// Обновление продукта в базе данных
+		err = db.UpdateProductInDB(id, brand, model, description, price)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("Error updating product: %v", err), http.StatusInternalServerError)
+			return
+		}
+
+		// Отправка успешного ответа в формате JSON
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprintf(w, `{"message": "Product updated successfully"}`)
+	} else {
+		error404PageHandler(w, r)
+		return
+	}
 }

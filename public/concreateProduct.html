@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>minima.</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <style>
+        /* Styles for the card container */
+        /* Import Montserrat font from Google Fonts */
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
+
+        /* Apply Montserrat font to all elements */
+        body {
+            font-family: 'Montserrat', sans-serif !important;
+
+        }
+
+        /* Apply Montserrat font to specific elements */
+        h1,
+        h2,
+        h3,
+        p {
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .profile-card {
+            width: 500px;
+            height: 200px;
+            display: block;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            margin: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: box-shadow 0.3s ease-in-out;
+        }
+
+        .profile-card:hover {
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Styles for the image */
+        .profile-image {
+            width: 150px;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Styles for the content on the right side */
+        .profile-content {
+            flex: 1;
+            padding: 15px;
+        }
+
+        /* Styles for name, description, and age */
+        .profile-name {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .profile-description {
+            font-size: 14px;
+            color: #555;
+            margin: 8px 0 5px;
+            overflow: hidden;
+        }
+
+        .profile-location {
+            font-size: 14px;
+            color: #000;
+            margin: 4rem 0 !important;
+            overflow: hidden;
+        }
+
+        hr {
+            margin: 1rem 0rem 0.5rem !important;
+        }
+
+        .profile-age {
+            font-size: 12px;
+            color: #777;
+        }
+
+        .filters-container {
+            margin-bottom: 20px;
+        }
+
+        /* Add a new style for the dropdowns */
+        .filter-dropdown {
+            margin-right: 10px;
+        }
+
+        /* Add a new style for the price range slider */
+
+        /* Add a new style for the price output */
+        .price-output {
+            display: inline-block;
+            margin-left: 10px;
+        }
+
+        /* Add custom styles here */
+        body {
+            font-family: 'Montserrat', sans-serif;
+            margin: 20px;
+        }
+
+        .notebook-details {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .notebook-details img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+
+        .notebook-details h2 {
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        .notebook-details p {
+            margin-bottom: 15px;
+        }
+
+        .notebook-details .price {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+        }
+
+        .notebook-details .btn {
+            margin-top: 20px;
+        }
+    </style>
+      <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+      integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark p-3">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">minima.</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown"
+                aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class=" collapse navbar-collapse" id="navbarNavDropdown">
+                <ul class="navbar-nav ml-auto ">
+                    <li class="nav-item">
+                        <a class="nav-link mx-2 active" aria-current="page" href="/products">Products</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link mx-2" href="#">Support</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link mx-2" href="#">Cart</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link mx-2" href="#" id="navbarDropdownMenuLink">Login
+                        </a>
+
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div class="container notebook-details">
+        <h1 class="text-center mt-5 mb-5">Laptop Details</h1>
+        <div class="card">
+            <img src="notebook_image.jpg" class="card-img-top" alt="Notebook Image">
+            <div class="card-body">
+                <h2 class="card-title">{{.Brand}}</h2>
+                <p class="card-text">Model: {{.Model}}</p>
+                <p class="card-text">Description: {{.Description}}Intel Core i7 12th Gen, AMD Radeon RX 6600M 6gb, 1TB
+                    HDD + 512GB SSD, Full HD 144 Hz</p>
+                <p class="price">Price: {{.Price}} tenge</p>
+                <a href="#" class="btn btn-primary">Add to Cart</a>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
