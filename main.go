@@ -140,6 +140,7 @@ func main() {
 	r.HandleFunc("/product/{id}", handleConcreteProduct)
 	r.HandleFunc("/admin/delete/{id}", rateLimitedHandler(handleDeleteProduct))
 	r.HandleFunc("/admin/edit/{id}", rateLimitedHandler(handleEditProduct))
+	r.HandleFunc("/admin/add", rateLimitedHandler(addProdHandle))
 
 	port := 8080
 	fmt.Printf("Server is running on http://localhost:%d\n", port)
@@ -553,7 +554,29 @@ func handleEditProduct(w http.ResponseWriter, r *http.Request) {
 		// Отправка успешного ответа в формате JSON
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `{"message": "Product updated successfully"}`)
+		fmt.Fprintf(w, `{"message": "Product updated successfully. Update page to see product"}`)
+	} else {
+		error404PageHandler(w, r)
+		return
+	}
+}
+func addProdHandle(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodPost {
+		brand := r.FormValue("brand")
+		model := r.FormValue("model")
+		description := r.FormValue("description")
+		price, err := strconv.Atoi(r.FormValue("price"))
+		if err != nil {
+			http.Error(w, "Invalid price", http.StatusBadRequest)
+			respondWithMessage(w, "Product is not added")
+			return
+		}
+		err = db.AddProduct(brand, model, description, price)
+		if err != nil {
+			respondWithMessage(w, "Product is not added")
+			return
+		}
+		respondWithMessage(w, "Product successfully added")
 	} else {
 		error404PageHandler(w, r)
 		return

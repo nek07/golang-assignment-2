@@ -323,39 +323,67 @@ func DeleteProduct(id string) error {
 	return nil
 }
 func UpdateProductInDB(id string, brand string, model string, description string, price int) error {
-    ctx := context.TODO()
-    client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://localhost:27017"))
-    if err != nil {
-        return fmt.Errorf("Error creating MongoDB client: %v", err)
-    }
-    err = client.Connect(ctx)
-    if err != nil {
-        return fmt.Errorf("Error connecting to MongoDB: %v", err)
-    }
-    defer client.Disconnect(ctx)
+	ctx := context.TODO()
+	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://localhost:27017"))
+	if err != nil {
+		return fmt.Errorf("Error creating MongoDB client: %v", err)
+	}
+	err = client.Connect(ctx)
+	if err != nil {
+		return fmt.Errorf("Error connecting to MongoDB: %v", err)
+	}
+	defer client.Disconnect(ctx)
 
-    collection := client.Database("go-assignment-2").Collection("products")
+	collection := client.Database("go-assignment-2").Collection("products")
 
-    objectID, err := primitive.ObjectIDFromHex(id)
-    if err != nil {
-        return fmt.Errorf("Invalid ID: %v", err)
-    }
+	objectID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return fmt.Errorf("Invalid ID: %v", err)
+	}
 
-    filter := bson.M{"_id": objectID}
+	filter := bson.M{"_id": objectID}
 
-    update := bson.M{
-        "$set": bson.M{
-            "brand":       brand,
-            "model":       model,
-            "description": description,
-            "price":       price,
-        },
-    }
+	update := bson.M{
+		"$set": bson.M{
+			"brand":       brand,
+			"model":       model,
+			"description": description,
+			"price":       price,
+		},
+	}
 
-    _, err = collection.UpdateOne(ctx, filter, update)
-    if err != nil {
-        return fmt.Errorf("Error updating product: %v", err)
-    }
+	_, err = collection.UpdateOne(ctx, filter, update)
+	if err != nil {
+		return fmt.Errorf("Error updating product: %v", err)
+	}
 
-    return nil
+	return nil
+}
+func AddProduct(brand string, model string, description string, price int) error {
+	ctx := context.TODO()
+	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://localhost:27017"))
+	if err != nil {
+		return fmt.Errorf("Error creating MongoDB client: %v", err)
+	}
+	err = client.Connect(ctx)
+	if err != nil {
+		return fmt.Errorf("Error connecting to MongoDB: %v", err)
+	}
+	defer client.Disconnect(ctx)
+
+	collection := client.Database("go-assignment-2").Collection("products")
+
+	product := bson.D{
+		{"brand", brand},
+		{"model", model},
+		{"description", description},
+		{"price", price},
+	}
+
+	_, err = collection.InsertOne(ctx, product)
+	if err != nil {
+		return fmt.Errorf("Error inserting product into MongoDB: %v", err)
+	}
+
+	return nil
 }

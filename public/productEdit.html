@@ -190,26 +190,26 @@
 
     <script>
         function putReqProd(id, callback, formData) {
-    fetch("/admin/edit/" + id, {
-        method: 'PUT', // Используем метод PUT
-        mode: "cors",
-        cache: "no-cache",
-        credentials: "same-origin",
-        headers: {
-            // Используем application/x-www-form-urlencoded
-            "Content-Type": "application/x-www-form-urlencoded",
-        },
-        redirect: "follow",
-        referrerPolicy: "no-referrer",
-        // Преобразуем объект FormData в строку
-        body: new URLSearchParams(formData).toString(),
-    })
-        .then(response => response.json())
-        .then(data => {
-            callback(data);
-        })
-        .catch(error => console.error('ErrorTest:', error));
-}
+            fetch("/admin/edit/" + id, {
+                method: 'PUT', // Используем метод PUT
+                mode: "cors",
+                cache: "no-cache",
+                credentials: "same-origin",
+                headers: {
+                    // Используем application/x-www-form-urlencoded
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
+                redirect: "follow",
+                referrerPolicy: "no-referrer",
+                // Преобразуем объект FormData в строку
+                body: new URLSearchParams(formData).toString(),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    callback(data);
+                })
+                .catch(error => console.error('ErrorTest:', error));
+        }
 
         function saveProd(id) {
             // const formData = {
