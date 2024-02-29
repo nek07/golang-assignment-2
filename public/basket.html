@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping Basket</title>
+    <link rel="stylesheet" href="styles/indexCSS.css">
+    <!--Favicon-->
+    <link rel="shortcut icon" href="img/Slogo.png">
+    <!--Google Fonts-->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+            href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&family=Zen+Dots&display=swap"
+            rel="stylesheet">
+    <!--Boostrap-->
+    <script src="https://kit.fontawesome.com/e4e39c0277.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+    integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <style>
+        body{
+            min-height: 100vh;
+            font-family: 'Open Sans', sans-serif;
+        }
+        .main{
+            vertical-align: middle;
+            display: flex;
+
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        .title{
+            margin-bottom: 5vh;
+        }
+        .card{
+            margin: auto;
+            max-width: 950px;
+            width: 90%;
+            box-shadow: 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+            border-radius: 1rem;
+            border: transparent;
+        }
+        @media(max-width:767px){
+            .card{
+                margin: 3vh auto;
+            }
+        }
+        #cart{
+            padding: 4vh 5vh;
+            border-bottom-left-radius: 1rem;
+            border-top-left-radius: 1rem;
+            box-shadow: 0 0 60px rgba(255, 255, 255, 0.4);
+        }
+        @media(max-width:767px){
+            #cart{
+                padding: 4vh;
+                border-bottom-left-radius: unset;
+                border-top-right-radius: 1rem;
+            }
+        }
+        #summary{
+            background-color: #6e6a6a;
+            border-top-right-radius: 1rem;
+            border-bottom-right-radius: 1rem;
+            padding: 4vh;
+            box-shadow: 10px 0 50px rgba(255, 255, 255, 0.4);
+        }
+        @media(max-width:767px){
+            #summary{
+                border-top-right-radius: unset;
+                border-bottom-left-radius: 1rem;
+            }
+        }
+        #summary .col-2{
+            padding: 0;
+        }
+        #summary .col-10
+        {
+            padding: 0;
+        }
+        .row{
+            margin: 0;
+        }
+        .title b{
+            font-size: 1.5rem;
+        }
+        .main{
+            margin: 0;
+            padding: 2vh 0;
+            width: 100%;
+        }
+        .col-2, .col{
+            padding: 0 1vh;
+        }
+        a{
+            padding: 0 1vh;
+        }
+        .close{
+            cursor: pointer;
+            margin-left: auto;
+            font-size: 0.7rem;
+        }
+        .col img{
+            width: 3.5rem;
+        }
+        .back-to-shop{
+            margin-top: 4.5rem;
+        }
+        h5{
+            margin-top: 4vh;
+        }
+        hr{
+            margin-top: 1.25rem;
+        }
+        form{
+            padding: 2vh 0;
+        }
+        input{
+            border: 1px solid rgba(0, 0, 0, 0.137);
+            padding: 1vh;
+            margin-bottom: 4vh;
+            outline: none;
+            width: 100%;
+            background-color: rgb(247, 247, 247);
+            color: #0b0b0b;
+        }
+        input:focus::-webkit-input-placeholder
+        {
+            color:transparent;
+        }
+        .drp-calendar{
+            color: black;
+        }
+        .order.btn{
+            background-color: #000;
+            font-weight: bold;
+            border-color: #000;
+            width: 100%;
+            font-size: 0.7rem;
+            margin-top: 4vh;
+            padding: 1vh;
+            border-radius: 0;
+            color: #ffffff;
+        }
+        .order.btn:hover{
+            background-color: #E14D2A;;
+            border-color: #E14D2A;;
+        }
+        a{
+            color: white;
+        }
+        a:hover{
+            color: white;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+<div class="container-fluid main mt-5 mb-5">
+<div class="card">
+    <div class="row">
+        <div class="col-md-8 cart" id="cart">
+            <div class="title">
+                <div class="row">
+                    <div class="col"><h4><b>Shopping Cart</b></h4></div>
+                    <div class="col align-self-center text-right text-muted">3 items</div>
+                </div>
+            </div>
+            <div class="row border-top border-bottom">
+
+               {{range .Equips}}
+                    <div class="row main align-items-center">
+                        <div class="eqID" style="display: none">{{.ID}}</div>
+                        <a href="/equip/<%= eq._id%>" class="col">
+                            <div class="row text-muted">{{.Model}}</div>
+                            <div class="row">{{.Brand}}</div>
+                        </a>
+                        <div class="col">₸ <span class="price">{{.Price}}</span> <a onclick=""></a></div>
+                        <span class="close col" onclick="deleteEquipFromCookie('<%= eq._id%>')" style="color: #E14D2A"> &#10005;</span>
+                    </div>
+               {{end}}
+            </div>
+            <div class="back-to-shop"><a href="/products">&leftarrow;<span class="text-muted"> Back to shop</span></a></div>
+        </div>
+        <div class="col-md-4 summary" id="summary">
+            <div><h5><b>Summary</b></h5></div>
+            <hr>
+            <form>
+                <p>NAME</p>
+                <input name="name" id="name" type="text" placeholder="DamirXGoD" required>
+                <p>PHONE NUMBER</p>
+                <input id="phoneNumber" name="phoneNumber" placeholder="Enter your phone number" type="tel" required>
+                <p>START-END DATE</p>
+                <input type="text" name="daterange" data-bs-theme="dark" id="daterange" onchange="setTotal()"/>
+
+            </form>
+            <div class="row" style="border-top: 1px solid rgba(255,255,255,.7); padding: 2vh 0;">
+                <div class="col-6">DAYS</div>
+                <div class="col text-right" id="totalDays"></div>
+                <div class="col-12"></div>
+                <div class="col-6">TOTAL PRICE</div>
+                        <div class="col text-right"><span id="totalPrice"></span> ₸</div>
+            </div>
+
+            <button class="btn order" onclick="createOrder()" id="order">ORDER</button>
+            <div id="status"></div>
+        </div>
+    </div>
+    </div>
+</div>
+
+</body>
+</html>

@@ -137,8 +137,8 @@
             margin-top: 20px;
         }
     </style>
-      <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
-      integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 </head>
 
 <body>
@@ -175,15 +175,107 @@
         <div class="card">
             <img src="notebook_image.jpg" class="card-img-top" alt="Notebook Image">
             <div class="card-body">
+                <p id="id" style="display: none;">{{.ID}}</p>
                 <h2 class="card-title">{{.Brand}}</h2>
                 <p class="card-text">Model: {{.Model}}</p>
-                <p class="card-text">Description: {{.Description}}Intel Core i7 12th Gen, AMD Radeon RX 6600M 6gb, 1TB
-                    HDD + 512GB SSD, Full HD 144 Hz</p>
+                <p class="card-text">Description: {{.Description}}</p>
                 <p class="price">Price: {{.Price}} tenge</p>
-                <a href="#" class="btn btn-primary">Add to Cart</a>
+                <button class="btn btn-outline-warning mt-3" id="add-btn" style="width: 100px; height: 50px;" onclick="addToCart('{{.ID}}')">Add</button>
+                <button class="btn btn-outline-danger mt-3" id="remove-btn" style="width: 100px; height: 50px; display: none" onclick="deleteEquipFromCookie('{{.ID}}')">Remove</button>
+                <button class="btn btn-outline-info mt-3" style="height: 50px; display: none" id="basket-btn" onclick="basketRedirect()">Go to Basket</button>
+
             </div>
         </div>
     </div>
+    <script>
+        const plusMinus = document.querySelector(".plus-minus");
+        const count = document.getElementById("count");
+        const addButton = document.getElementById('add-btn');
+        const removeButton = document.getElementById('remove-btn');
+        const basketButton = document.getElementById('basket-btn');
+
+
+
+        function plus(max) {
+            if (count.innerHTML < max) {
+                count.innerHTML = parseInt(count.innerHTML) + 1;
+            }
+        }
+        function minus() {
+            if (count.innerHTML > 1) {
+                count.innerHTML = parseInt(count.innerHTML) - 1;
+            }
+        }
+        function setCookie(name, value, days) {
+            var expires = "";
+            if (days) {
+                var date = new Date();
+                date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+                expires = "; expires=" + date.toUTCString();
+            }
+            document.cookie = name + "=" + (value || "") + expires + "; path=/";
+        }
+
+        function getCookie(name) {
+            const nameEQ = name + "=";
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                let cookie = cookies[i];
+                while (cookie.charAt(0) == ' ') {
+                    cookie = cookie.substring(1, cookie.length);
+                }
+                if (cookie.indexOf(nameEQ) == 0) {
+                    return cookie.substring(nameEQ.length, cookie.length);
+                }
+            }
+            return null;
+        }
+
+        function addToCart(productId) {
+            let cartItems = getCartItems();
+            if (!cartItems) {
+                cartItems = [];
+            } else if (cartItems.includes(productId)) {
+                changeBtn()
+                return;
+            }
+            cartItems.push(productId);
+            setCookie('cartItems', JSON.stringify(cartItems), 7);
+            // changeBtn();
+        }
+        function changeBtn() {
+            let cartItems = getCartItems();
+            if (cartItems.includes(document.getElementById('id').innerHTML)) {
+                addButton.style.display = 'none'
+                removeButton.style.display = 'block';
+                basketButton.style.display = 'block'
+            } else {
+                removeButton.style.display = 'none';
+                addButton.style.display = 'block';
+                basketButton.style.display = 'none'
+            }
+        }
+        function deleteEquipFromCookie(equipId) {
+            let cartItems = getCartItemsFromCookie();
+            cartItems = cartItems.filter(item => item !== equipId);
+            setCookie('cartItems', JSON.stringify(cartItems), 7)
+            changeBtn()
+        }
+        function getCartItemsFromCookie() {
+            const cartItemsString = getCookie('cartItems');
+            return cartItemsString ? JSON.parse(cartItemsString) : [];
+        }
+        function getCartItems() {
+            const cartItems = getCookie('cartItems');
+            return cartItems ? JSON.parse(cartItems) : [];
+        }
+        function basketRedirect() {
+            window.location.href = '/basket'
+        }
+        changeBtn()
+
+
+    </script>
 </body>
 
 </html>

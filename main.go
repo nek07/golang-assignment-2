@@ -141,6 +141,7 @@ func main() {
 	r.HandleFunc("/admin/delete/{id}", rateLimitedHandler(handleDeleteProduct))
 	r.HandleFunc("/admin/edit/{id}", rateLimitedHandler(handleEditProduct))
 	r.HandleFunc("/admin/add", rateLimitedHandler(addProdHandle))
+	r.HandleFunc("/basket", rateLimitedHandler(basketHandler))
 
 	port := 8080
 	fmt.Printf("Server is running on http://localhost:%d\n", port)
@@ -579,6 +580,52 @@ func addProdHandle(w http.ResponseWriter, r *http.Request) {
 		respondWithMessage(w, "Product successfully added")
 	} else {
 		error404PageHandler(w, r)
+		return
+	}
+}
+func basketHandler(w http.ResponseWriter, r *http.Request) {
+	// Парсинг JSON из куки
+	cookie, err := r.Cookie("cartItems")
+	if err != nil {
+		fmt.Println("Error parsing cartItems cookie:", err)
+		renderBasket(w, []db.Laptop{})
+		return
+	}
+	var equipsIDs []string
+	err = json.Unmarshal([]byte(cookie.Value), &equipsIDs)
+	if err != nil {
+		fmt.Println("Error unmarshalling cartItems:", err)
+		renderBasket(w, []db.Laptop{})
+		return
+	}
+
+	// Получение данных об оборудовании по его ID
+	var equips []db.Laptop
+	for _, id := range equipsIDs {
+		equip, err := db.FindProductById(id)
+		if err != nil {
+			fmt.Printf("Error getting equip with ID %s: %v\n", id, err)
+			continue
+		}
+		equips = append(equips, equip)
+	}
+
+	renderBasket(w, equips)
+}
+
+func renderBasket(w http.ResponseWriter, equips []db.Laptop) {
+	tmpl, err := template.ParseFiles("public/basket.html")
+	if err != nil {
+		fmt.Println("Error parsing HTML template:", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	// Отправка данных об оборудовании в шаблон
+	err = tmpl.Execute(w, struct{ Equips []db.Laptop }{equips})
+	if err != nil {
+		fmt.Println("Error executing HTML template:", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
 }
