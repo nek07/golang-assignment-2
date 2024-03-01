@@ -244,6 +244,10 @@ type ValidationErrors struct {
 }
 
 func productsPageHandler(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/products" {
+		error404PageHandler(w, r)
+		return
+	}
 	// page := r.URL.Query().Get("page")
 	brands := []string{r.URL.Query().Get("brand")}
 	sortBy := r.URL.Query().Get("sort")

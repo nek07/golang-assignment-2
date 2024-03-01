@@ -1,16 +1,47 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link rel="stylesheet" href="/static/errorsStyle.css">
+    <title>Error 404</title>
+    <!-- Include Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Include your custom CSS -->
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .container {
+            margin-top: 100px;
+        }
+
+        .error-container {
+            text-align: center;
+            padding: 30px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+    </style>
 </head>
+
 <body>
-    <div id="error">
-        <h1>Ошибка 404</h1>
-        <p id="text">Ой, что-то пошло не так! Страница, которую вы ищете, пропала в цифровых дебрях. Код ошибки 404 говорит о том, что сервер не может найти запрашиваемый ресурс. Вернитесь на главную или воспользуйтесь поиском для продолжения путешествия по сайту.</p>
-        <a href="/"><button>Вернуться на главную страницу</button></a>
+    <div class="container">
+        <div class="error-container">
+            <h1 class="display-4">Error 404</h1>
+            <p class="lead">Oops, something went wrong! The page you are looking for seems to have vanished in the
+                digital abyss.
+                Error code 404 indicates that the server can't find the requested resource.</p>
+            <a href="/home" class="btn btn-primary">Go back to the home page</a>
+        </div>
     </div>
+
+    <!-- Include Bootstrap JS and Popper.js -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 </body>
+
 </html>
