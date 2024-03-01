@@ -1,55 +1,50 @@
-# Minima laptop store
-## Participants
-- Abylai Taitoleuov 🤖
-- Asainov Damir 🏆
+# Minima Laptop Store
 
-## Brief Project Description
-This Go application demonstrates basic CRUD (Create, Read, Update, Delete) operations using MongoDB. It includes a simple web server with endpoints for displaying a form, submitting data, and storing the submitted data in a MongoDB database.
+Welcome to **Minima Laptop Store**! We're your one-stop-shop for high-quality laptops and the latest in technology. Explore our store for top-notch gadgets and an exceptional shopping experience.
 
 
-## Screenshot
-![ExplorePlaces Screenshot](nekoLand.png)
+# Contributors
+* ### Abylai Taitoleuov (nek07) 🐻
+* ### Asainov Damir 🐀
 
-## Step-by-Step Instructions for Launching the Application
-1. **Clone the Repository:**
+
+
+## Features
+- **Range of products**: Explore our extensive collection of laptops featuring the latest models from leading brands. From sleek ultrabooks to powerful gaming laptops, we have something for every user.
+- **User cabinet and cart**: Create your personalized user account and add laptops to your cart.
+- **Customer support**: Reach out through our contact form, and we'll ensure a prompt and helpful response.
+- **Authorization using email**: Your privacy matters to us. Enjoy the convenience of email authorization for seamless logins and secure account management.
+
+
+## Technologies Used
+- #### Go
+- #### MongoDB
+- #### JSON Web Tokens (JWT)
+- #### Mux
+- #### SMTP
+
+
+
+## Installation
+### To install and run the project locally, follow these steps:
+
+#### 1. Clone the repository from GitHub:
+   ```git
+   git clone https://github.com/nek07/minima-laptop-store.git
    ```
-   git clone https://github.com/nek07/golang-assignment-2.git
+#### 2. Install dependencies using npm:
+   ```bash
+   go mod init
    ```
 
-2. **Navigate to Project Directory:**
-   ```
-   cd golang-assignment-2
-   ```
-
-3. **Start the Server:**
-   ```
+#### 3. Start the server.
+   ```bash
    go run main.go
    ```
 
-6. **Access the Application:**
-   Open your web browser and go to `http://localhost:8080`
+#### 6.Access the website at http://localhost:8080 in your web browser.
 
-## Tools Used
-- **Frontend:**
-  - HTML
-  - CSS
 
-- **Backend:**
-  - GO
-  
-- **Go Modules**
-  - `go.mongodb.org/mongo-driver` for MongoDB interactions
-  - `github.com/joho/godotenv/autoload` for loading environment variables
-  - `github.com/eminetto/mongo-migrate` for database migrations
-
-- **Database:**
-  - MongoDB
-
-- **Version Control:**
-  - Git
-
-- **Development Environment:**
-  - Visual Studio Code
 
 **Links to Sources:**
 - [Mongo Driver](https://pkg.go.dev/go.mongodb.org/mongo-driver)
