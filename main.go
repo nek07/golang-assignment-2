@@ -120,7 +120,7 @@ func main() {
 	fmt.Println("Migration executed successfully.")
 
 	r := mux.NewRouter()
-
+	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("public"))))
 	// Регистрация обработчиков для маршрутов
 	r.HandleFunc("/registration/verify", confirmVerificationCodeHandler)
 	r.HandleFunc("/registration/verification", verificationPageHandler)

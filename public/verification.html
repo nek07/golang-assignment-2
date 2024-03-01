@@ -1,14 +1,31 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verification Step 2</title>
+<html style="background-color:white">
+<head >
+    <title>Verification</title>
+    <link rel="stylesheet"
+    href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+    integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+    crossorigin="anonymous">
+    <link rel="stylesheet" href="/static/regPage.css">
 </head>
-<body>
-    <form action="/registration/verify" method="POST" id="verificationForm">
-        <label for="verificationCode">Verification Code:</label>
-        <input type="text" id="verificationCode" name="verificationCode" required>
-        <input type="submit" value="Submit">
+
+<body >
+ 
+    <!-- multistep form -->
+    <form id="msform" action="/registration/verify" method="POST" >
+        <fieldset>
+            <h2 class="fs-title">Verification</h2>
+            <br>
+            <label for="verificationCode">Verification Code:</label>
+            <input type="text" id="verificationCode" name="verificationCode" placeholder="0000000" required>
+   
+            <input type="submit" value="submit" class="next action-button">
+        </fieldset>
     </form>
+   
+    <script>
+  
+
+    </script>
 </body>
+
+</html>
