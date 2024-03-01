@@ -1,9 +1,11 @@
-# Paw Rescue Hub
+# Minima Laptop Store
 
 Welcome to **Minima Laptop Store**! We're your one-stop-shop for high-quality laptops and the latest in technology. Explore our store for top-notch gadgets and an exceptional shopping experience.
 
 
-**View the website:** [click here](pawrescue-hub-project.onrender.com)
+# Contributors
+* ### Abylai Taitoleuov (nek07) 🐻
+* ### Asainov Damir 🐀
 
 
 
@@ -43,9 +45,6 @@ Welcome to **Minima Laptop Store**! We're your one-stop-shop for high-quality la
 #### 6.Access the website at http://localhost:8080 in your web browser.
 
 
-## Contributors
-* ### nek07
-* ### damirAsainov
 
 **Links to Sources:**
 - [Mongo Driver](https://pkg.go.dev/go.mongodb.org/mongo-driver)
