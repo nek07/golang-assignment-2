@@ -125,6 +125,24 @@ func FindUserByID(ctx context.Context, client *mongo.Client, databaseName, colle
 	}
 	return &user, nil
 }
+func FindUserByToken(client *mongo.Client, token string) (*User, error) {
+	collection := client.Database("go-assignment-2").Collection("users")
+	var ctx context.Context
+	// Convert the hex string to an ObjectId
+	filter := bson.M{"access_token": token}
+
+	// filter to find the document by its ID
+	// query
+	var user User
+	err := collection.FindOne(ctx, filter).Decode(&user)
+	if err == mongo.ErrNoDocuments {
+		return nil, fmt.Errorf("user not found")
+	} else if err != nil {
+		log.WithError(err).Error("Error finding user by Token")
+		return nil, err
+	}
+	return &user, nil
+}
 func UpdateUserUsernameByID(ctx context.Context, client *mongo.Client, databaseName, collectionName, userIDHex string, newUsername string) error {
 	collection := client.Database(databaseName).Collection(collectionName)
 

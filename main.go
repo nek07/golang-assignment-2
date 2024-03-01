@@ -122,6 +122,7 @@ func main() {
 	r := mux.NewRouter()
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("public"))))
 	// Регистрация обработчиков для маршрутов
+	r.HandleFunc("/home", homeHandler)
 	r.HandleFunc("/registration/verify", confirmVerificationCodeHandler)
 	r.HandleFunc("/registration/verification", verificationPageHandler)
 	r.HandleFunc("/registration", registrationPageHandler)
@@ -129,18 +130,18 @@ func main() {
 	r.HandleFunc("/login", loginHandler)
 	r.HandleFunc("/register", registerHandler)
 	r.HandleFunc("/error", rateLimitedHandler(errorPageHandler))
-	r.HandleFunc("/crud", rateLimitedHandler(crudHandler))
-	r.HandleFunc("/getUser", rateLimitedHandler(handleGetUser))
-	r.HandleFunc("/updateUser", rateLimitedHandler(handleUpdateUser))
-	r.HandleFunc("/deleteUser", rateLimitedHandler(handleDeleteUser))
-	r.HandleFunc("/getAllUsers", rateLimitedHandler(handleGetAllUsers))
-	r.HandleFunc("/admin", rateLimitedHandler(handleAdmin))
-	r.HandleFunc("/products", rateLimitedHandler(productsPageHandler))
-	r.HandleFunc("/product/{id}", handleConcreteProduct)
-	r.HandleFunc("/admin/delete/{id}", rateLimitedHandler(handleDeleteProduct))
-	r.HandleFunc("/admin/edit/{id}", rateLimitedHandler(handleEditProduct))
-	r.HandleFunc("/admin/add", rateLimitedHandler(addProdHandle))
-	r.HandleFunc("/basket", rateLimitedHandler(basketHandler))
+	r.HandleFunc("/crud", verifyToken(rateLimitedHandler(crudHandler)))
+	r.HandleFunc("/getUser", verifyToken(rateLimitedHandler(handleGetUser)))
+	r.HandleFunc("/updateUser", verifyToken(rateLimitedHandler(handleUpdateUser)))
+	r.HandleFunc("/deleteUser", verifyToken(rateLimitedHandler(handleDeleteUser)))
+	r.HandleFunc("/getAllUsers", verifyToken(rateLimitedHandler(handleGetAllUsers)))
+	r.HandleFunc("/admin", verifyToken(rateLimitedHandler(handleAdmin)))
+	r.HandleFunc("/products", verifyToken(rateLimitedHandler(productsPageHandler)))
+	r.HandleFunc("/product/{id}", verifyToken(handleConcreteProduct))
+	r.HandleFunc("/admin/delete/{id}", verifyToken(rateLimitedHandler(handleDeleteProduct)))
+	r.HandleFunc("/admin/edit/{id}", verifyToken(rateLimitedHandler(handleEditProduct)))
+	r.HandleFunc("/admin/add", verifyToken(rateLimitedHandler(addProdHandle)))
+	r.HandleFunc("/basket", verifyToken(rateLimitedHandler(basketHandler)))
 
 	port := 8080
 	fmt.Printf("Server is running on http://localhost:%d\n", port)
@@ -155,6 +156,18 @@ func main() {
 		log.WithError(err).Error("Error disconnecting from MongoDB")
 	}
 
+}
+func homeHandler(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/home" {
+		error404PageHandler(w, r)
+		return
+	}
+
+	if r.Method == http.MethodGet {
+		http.ServeFile(w, r, "public/index.html")
+	} else {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	}
 }
 func registrationPageHandler(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/registration" {
@@ -624,6 +637,33 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 
 	http.Redirect(w, r, "/registration/verification", http.StatusSeeOther)
 }
+func verifyToken(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// Extract the token from the request cookie
+		cookie, err := r.Cookie("token")
+		if err != nil {
+			http.Redirect(w, r, "/logins", http.StatusSeeOther)
+			return
+		}
+
+		token := cookie.Value
+
+		// Verify the token and retrieve user information
+		user, err := db.FindUserByToken(client, token)
+		if err != nil {
+			http.Redirect(w, r, "/logins", http.StatusSeeOther)
+			return
+		}
+
+		// Store user information in the request context
+		ctx := context.WithValue(r.Context(), "user", user)
+
+		// Call the next handler in the chain with the updated request context
+		next.ServeHTTP(w, r.WithContext(ctx))
+	}
+
+}
+
 func confirmVerificationCodeHandler(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/registration/verify" {
 		error404PageHandler(w, r)
@@ -727,8 +767,9 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	db.UpdateUserUsernameByEmail(client, user.Email, "access_token", token)
 	// Return a success response
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Login successful"))
+	fmt.Print("Login success")
+	http.Redirect(w, r, "/home", http.StatusSeeOther)
+
 }
 func generateVerificationCode() string {
 	rand.Seed(time.Now().UnixNano())

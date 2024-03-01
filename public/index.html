@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+        <link rel="stylesheet" href="/static/style.css">
+    </head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark p-3">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">minima.</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown"
+                aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class=" collapse navbar-collapse" id="navbarNavDropdown">
+                <ul class="navbar-nav ml-auto ">
+                    <li class="nav-item">
+                        <a class="nav-link mx-2 active" aria-current="page" href="/products">Products</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link mx-2" href="#">Support</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link mx-2" href="/basket">Cart</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link mx-2" href="/logins" id="navbarDropdownMenuLink">Login
+                        </a>
+
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div class="jumbotron" id="home">
+        <h1 class="display-4">Welcome to Paw Rescue Community</h1>
+        <p class="lead">Discover the power of creativity and innovation with us.</p>
+        <a class="btn btn-primary btn-lg" href="/pets/aboutus" role="button">Learn More</a>
+    </div>
+
+    <!-- Features -->
+    <div class="features" id="features">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 feature-item">
+                    <i class="fas fa-cogs feature-icon"></i>
+                    <h3>Pet adoption</h3>
+                    <p>Paw Rescue Hub providing a platform where individuals can explore and connect with pets in need
+                        of a loving home.</p>
+                </div>
+                <div class="col-md-4 feature-item">
+                    <i class="fas fa-chart-bar feature-icon"></i>
+                    <h3>Donation</h3>
+                    <p>Your contributions to Paw Rescue Hub create a ripple of change, providing essential care,
+                        comfort, and a second chance for animals in need.</p>
+                </div>
+                <div class="col-md-4 feature-item">
+                    <i class="fas fa-mobile-alt feature-icon"></i>
+                    <h3>Education</h3>
+                    <p>Every story shared inspires a community passionate about creating a brighter future for our furry
+                        friends.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Call to Action -->
+    <div class="cta">
+        <div class="container">
+            <h2>Ready to get started?</h2>
+            <p>Contact us today and let's make something amazing together.</p>
+            <a class="btn btn-light btn-lg" href="/auth/registration" role="button">Join</a>
+        </div>
+    </div>
+
+    <!-- Contact -->
+    <div class="container form-container">
+        <h2 class="mb-4" style="text-align:center">Contact Us</h2>
+
+        <form>
+            <!-- Name Input -->
+            <div class="form-group">
+                <label for="name">Your Name:</label>
+                <input type="text" class="form-control" id="name" placeholder="Enter your name" required>
+            </div>
+
+            <!-- Email Input -->
+            <div class="form-group">
+                <label for="email">Email Address:</label>
+                <input type="email" class="form-control" id="email" placeholder="Enter your email" required>
+            </div>
+
+            <!-- Message Textarea -->
+            <div class="form-group">
+                <label for="message">Your Message:</label>
+                <textarea class="form-control" id="message" rows="5" placeholder="Type your message"
+                    required></textarea>
+            </div>
+            <footer class="bg-dark text-white text-center py-3">
+                &copy; 2024 minima. All rights reserved.
+            </footer>
+            <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+                integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+                crossorigin="anonymous"></script>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+                integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+                crossorigin="anonymous"></script>
+            <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+                integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+                crossorigin="anonymous"></script>
+</body>
+
+</html>
