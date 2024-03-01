@@ -446,3 +446,4 @@ func AddProduct(brand string, model string, description string, price int) error
 
 	return nil
 }
+

@@ -11,6 +11,7 @@ import (
 	"math/rand"
 	"net/http"
 	"net/smtp"
+	"net/url"
 	"os"
 	"time"
 
@@ -142,6 +143,10 @@ func main() {
 	r.HandleFunc("/admin/edit/{id}", verifyToken(rateLimitedHandler(handleEditProduct)))
 	r.HandleFunc("/admin/add", verifyToken(rateLimitedHandler(addProdHandle)))
 	r.HandleFunc("/basket", verifyToken(rateLimitedHandler(basketHandler)))
+	r.HandleFunc("/product/{id}/addToBasket", verifyToken(rateLimitedHandler(addToCartHandler)))
+	r.HandleFunc("/view-cart", verifyToken(rateLimitedHandler(viewCartHandler)))
+	r.HandleFunc("/remove-from-cart/{id}", verifyToken(rateLimitedHandler(removeFromCartHandler)))
+
 
 	port := 8080
 	fmt.Printf("Server is running on http://localhost:%d\n", port)
@@ -526,52 +531,6 @@ func addProdHandle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
-func basketHandler(w http.ResponseWriter, r *http.Request) {
-	// Парсинг JSON из куки
-	cookie, err := r.Cookie("cartItems")
-	if err != nil {
-		fmt.Println("Error parsing cartItems cookie:", err)
-		renderBasket(w, []db.Laptop{})
-		return
-	}
-	var equipsIDs []string
-	err = json.Unmarshal([]byte(cookie.Value), &equipsIDs)
-	if err != nil {
-		fmt.Println("Error unmarshalling cartItems:", err)
-		renderBasket(w, []db.Laptop{})
-		return
-	}
-
-	// Получение данных об оборудовании по его ID
-	var equips []db.Laptop
-	for _, id := range equipsIDs {
-		equip, err := db.FindProductById(id)
-		if err != nil {
-			fmt.Printf("Error getting equip with ID %s: %v\n", id, err)
-			continue
-		}
-		equips = append(equips, equip)
-	}
-
-	renderBasket(w, equips)
-}
-
-func renderBasket(w http.ResponseWriter, equips []db.Laptop) {
-	tmpl, err := template.ParseFiles("public/basket.html")
-	if err != nil {
-		fmt.Println("Error parsing HTML template:", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		return
-	}
-
-	// Отправка данных об оборудовании в шаблон
-	err = tmpl.Execute(w, struct{ Equips []db.Laptop }{equips})
-	if err != nil {
-		fmt.Println("Error executing HTML template:", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		return
-	}
-}
 
 // Secret key for JWT signing
 var secretKey = []byte("SecretYouShouldHide")
@@ -817,3 +776,101 @@ func generateJWT(password string, username string) (string, error) {
 
 	return tokenString, nil
 }
+
+type ShoppingCart struct {
+	Items []db.Laptop `json:"items"`
+}
+
+// Handler for adding items to the shopping cart
+func addToCartHandler(w http.ResponseWriter, r *http.Request) {
+	// Retrieve item details from request
+	vars := mux.Vars(r)
+	laptopID := vars["id"]
+	newItem, _ := db.FindProductById(laptopID)
+
+	// Retrieve existing shopping cart from cookie or create a new one
+	cart := getCartFromCookie(r)
+
+	// Add the new item to the shopping cart
+	cart.Items = append(cart.Items, newItem)
+
+	// Save the updated shopping cart to cookie
+	saveCartToCookie(w, cart)
+
+	fmt.Fprintf(w, "Item added to cart successfully!")
+}
+
+// Handler for viewing items in the shopping cart
+func viewCartHandler(w http.ResponseWriter, r *http.Request) {
+	// Retrieve shopping cart from cookie
+	cart := getCartFromCookie(r)
+
+	// Convert shopping cart to JSON and send as response
+	cartJSON, err := json.Marshal(cart)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(cartJSON)
+}
+
+// Function to retrieve shopping cart from cookie
+func getCartFromCookie(r *http.Request) ShoppingCart {
+	cartCookie, err := r.Cookie("shopping_cart")
+	if err != nil {
+		// If cookie doesn't exist, return an empty cart
+		return ShoppingCart{Items: []db.Laptop{}}
+	}
+
+	var cart ShoppingCart
+	cartJSON, _ := url.QueryUnescape(cartCookie.Value)
+	json.Unmarshal([]byte(cartJSON), &cart)
+	return cart
+}
+
+// Function to save shopping cart to cookie
+func saveCartToCookie(w http.ResponseWriter, cart ShoppingCart) {
+	cartJSON, _ := json.Marshal(cart)
+	cartJSONEscaped := url.QueryEscape(string(cartJSON))
+	http.SetCookie(w, &http.Cookie{
+		Name:  "shopping_cart",
+		Value: cartJSONEscaped,
+		Path:  "/",
+	})
+}
+func basketHandler(w http.ResponseWriter, r *http.Request) {
+	tmpl, err := template.ParseFiles("public/basket.html")
+	if err != nil {
+		fmt.Println("Error parsing HTML template:", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+	}
+	tmpl.Execute(w, "")
+}
+
+// Handler for removing an item from the shopping cart
+// Handler for removing items from the shopping cart
+func removeFromCartHandler(w http.ResponseWriter, r *http.Request) {
+    // Retrieve item ID from request parameters
+    vars := mux.Vars(r)
+    laptopID := vars["id"]
+
+    // Retrieve existing shopping cart from cookie
+    cart := getCartFromCookie(r)
+
+    // Find and remove the item from the shopping cart
+    for i, item := range cart.Items {
+        if item.ID == laptopID {
+            // Remove the item from the slice
+            cart.Items = append(cart.Items[:i], cart.Items[i+1:]...)
+            break
+        }
+    }
+
+    // Save the updated shopping cart to cookie
+    saveCartToCookie(w, cart)
+
+    fmt.Fprintf(w, "Item removed from cart successfully!")
+}
+

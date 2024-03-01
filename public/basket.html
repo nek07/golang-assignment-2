@@ -5,7 +5,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Shopping Basket</title>
-    <link rel="stylesheet" href="styles/indexCSS.css">
     <!--Favicon-->
     <link rel="shortcut icon" href="img/Slogo.png">
     <!--Google Fonts-->
@@ -59,23 +58,10 @@
                             <div class="col">
                                 <h4><b>Shopping Cart</b></h4>
                             </div>
-                            <div class="col align-self-center text-right text-muted">3 items</div>
                         </div>
                     </div>
                     <div class="row border-top border-bottom">
-
-                        {{range .Equips}}
-                        <div class="row main align-items-center">
-                            <div class="eqID" style="display: none">{{.ID}}</div>
-                            <a href="/equip/<%= eq._id%>" class="col">
-                                <div class="row text-muted">{{.Model}}</div>
-                                <div class="row">{{.Brand}}</div>
-                            </a>
-                            <div class="col">₸ <span class="price">{{.Price}}</span> <a onclick=""></a></div>
-                            <span class="close col" onclick="deleteEquipFromCookie('<%= eq._id%>')"
-                                style="color: #E14D2A"> &#10005;</span>
-                        </div>
-                        {{end}}
+                        <!-- Здесь будет отображаться содержимое корзины -->
                     </div>
                     <div class="back-to-shop"><a href="/products">&leftarrow;<span class="text-muted"> Back to
                                 shop</span></a></div>
@@ -112,6 +98,58 @@
     <footer class="bg-dark text-white text-center py-3">
         &copy; 2024 minima. All rights reserved.
     </footer>
+
+    <!-- Ваши скрипты -->
+    <script>
+        function loadCart() {
+            fetch("/view-cart")
+                .then(response => response.json())
+                .then(data => {
+                    // Отобразить содержимое корзины на странице
+                    const cartContainer = document.querySelector("#cart .border-top");
+                    cartContainer.innerHTML = "";
+                    for (const itemId in data.items) {
+                        const item = data.items[itemId];
+                        const itemElement = document.createElement("div");
+                        itemElement.classList.add("row", "main", "align-items-center");
+                        itemElement.innerHTML = `
+                            <div class="eqID" style="display: none">${item.ID}</div>
+                            <a href="/product/${item.ID}" class="col">
+                                <div class="row text-muted">${item.Model}</div>
+                                <div class="row" style="color:black">${item.Brand}</div>
+                            </a>
+                            <div class="col">₸ <span class="price">${item.Price}</span> <a onclick=""></a></div>
+                            <span class="close col" onclick="deleteEquipFromCart('${item.ID}')" style="color: #E14D2A"> &#10005;</span>
+
+                        `;
+                        cartContainer.appendChild(itemElement);
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        function deleteEquipFromCart(itemId) {
+            fetch("/remove-from-cart/" + itemId, {
+                method: 'POST'
+            })
+                .then(response => {
+                    if (response.ok) {
+                        // Обновить отображение корзины после удаления товара
+                        loadCart();
+                    } else {
+                        console.error('Error:', response.statusText);
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        function createOrder() {
+            // Ваши действия при создании заказа
+        }
+
+        // Загрузка корзины при загрузке страницы
+        loadCart();
+    </script>
 </body>
 
 </html>
