@@ -8,23 +8,27 @@ import (
 	"io"
 	"io/ioutil"
 	_ "log"
+	"math/rand"
 	"net/http"
+	"net/smtp"
 	"os"
 	"time"
 
+	"github.com/golang-jwt/jwt"
 	_ "github.com/joho/godotenv/autoload"
 
 	"ass3/db"
 	"html/template" //end damir
 	"strconv"
-	"strings" //Damir
 
+	//Damir
 	_ "github.com/eminetto/mongo-migrate"
 	"go.mongodb.org/mongo-driver/bson"
 	_ "go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"golang.org/x/crypto/bcrypt"
 	"golang.org/x/time/rate"
 
 	"github.com/gorilla/mux"
@@ -32,15 +36,6 @@ import (
 	"github.com/sirupsen/logrus/hooks/writer"
 )
 
-type User struct {
-	ID         primitive.ObjectID `bson:"_id"`
-	Name       string             `bson:"name"`
-	Username   string             `bson:"username"`
-	Email      string             `bson:"email"`
-	Password   string             `bson:"password"`
-	Created_at time.Time
-	Updated_at time.Time
-}
 type Data struct {
 	DocumentCount int64 `json:"DocumentCount"`
 	Laptops       []db.Laptop
@@ -127,8 +122,12 @@ func main() {
 	r := mux.NewRouter()
 
 	// Регистрация обработчиков для маршрутов
-	r.HandleFunc("/", rateLimitedHandler(homeHandler))
-	r.HandleFunc("/submit", rateLimitedHandler(submitHandler))
+	r.HandleFunc("/registration/verify", confirmVerificationCodeHandler)
+	r.HandleFunc("/registration/verification", verificationPageHandler)
+	r.HandleFunc("/registration", registrationPageHandler)
+	r.HandleFunc("/logins", loginPageHandler)
+	r.HandleFunc("/login", loginHandler)
+	r.HandleFunc("/register", registerHandler)
 	r.HandleFunc("/error", rateLimitedHandler(errorPageHandler))
 	r.HandleFunc("/crud", rateLimitedHandler(crudHandler))
 	r.HandleFunc("/getUser", rateLimitedHandler(handleGetUser))
@@ -157,7 +156,42 @@ func main() {
 	}
 
 }
+func registrationPageHandler(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/registration" {
+		error404PageHandler(w, r)
+		return
+	}
 
+	if r.Method == http.MethodGet {
+		http.ServeFile(w, r, "public/registration.html")
+	} else {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	}
+}
+func loginPageHandler(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/logins" {
+		error404PageHandler(w, r)
+		return
+	}
+
+	if r.Method == http.MethodGet {
+		http.ServeFile(w, r, "public/login.html")
+	} else {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	}
+}
+func verificationPageHandler(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/registration/verification" {
+		error404PageHandler(w, r)
+		return
+	}
+
+	if r.Method == http.MethodGet {
+		http.ServeFile(w, r, "public/verification.html")
+	} else {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	}
+}
 func rateLimitedHandler(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if !limiter.Allow() {
@@ -186,80 +220,6 @@ func rateLimitedHandler(next http.HandlerFunc) http.HandlerFunc {
 		next(w, r)
 	}
 }
-func homeHandler(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/" { //Damir
-		error404PageHandler(w, r)
-		return
-	} // end damir
-
-	if r.Method == http.MethodGet {
-		http.ServeFile(w, r, "public/form.html")
-	} else {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-	}
-}
-
-func submitHandler(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/submit" { //Damir
-		error404PageHandler(w, r)
-		return
-	} // end damir
-
-	if r.Method == http.MethodPost {
-		err := r.ParseForm()
-		if err != nil {
-			http.Error(w, "Error parsing form", http.StatusBadRequest)
-			log.Println("Error parsing form:", err)
-			return
-		}
-		user := getData(r.FormValue("name"), r.FormValue("email"), r.FormValue("username"), r.FormValue("password"))
-
-		errors := checkForm(user.Name, user.Email, user.Username, user.Password, r.FormValue("confirm-password")) //Damir
-
-		if errors.NameError != "" || errors.EmailError != "" || errors.UsernameError != "" ||
-			errors.PasswordError != "" || errors.ConfirmPasswordError != "" {
-			tmpl, err := template.ParseFiles("public/error.html")
-			if err != nil {
-				http.Error(w, "Error rendering error page", http.StatusInternalServerError)
-				log.Println("Error rendering error page:", err)
-				return
-			}
-
-			log.WithFields(logrus.Fields{
-				"action":    "user_submission",
-				"username":  user.Username,
-				"timestamp": time.Now().Format(time.RFC3339),
-			}).Info("User submitted the form")
-			err = tmpl.Execute(w, errors)
-			if err != nil {
-				http.Error(w, "Error rendering error page", http.StatusInternalServerError)
-				log.Println("Error rendering error page:", err)
-				return
-			}
-
-			return
-		} // end damir
-
-		log.Printf("Received form data: %+v\n", user)
-		db.InsertData(user)
-
-	} else {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-	}
-
-}
-func getData(name string, email string, username string, password string) db.User {
-	user := db.User{
-		ID:         primitive.NewObjectID(),
-		Name:       name,
-		Email:      email,
-		Username:   username,
-		Password:   password,
-		Created_at: time.Now(),
-		Updated_at: time.Now(),
-	}
-	return user
-}
 
 // Damir
 type ValidationErrors struct {
@@ -270,40 +230,6 @@ type ValidationErrors struct {
 	ConfirmPasswordError string
 }
 
-func checkForm(name, email, username, password, confirmPassword string) ValidationErrors {
-	var errors ValidationErrors
-
-	// Name validation
-	if strings.TrimSpace(name) == "" {
-		errors.NameError = "Name is required."
-	}
-
-	// Email validation
-	if strings.TrimSpace(email) == "" {
-		errors.EmailError = "Email is required."
-	} else if !strings.Contains(email, "@") {
-		errors.EmailError = "Invalid email address."
-	}
-
-	// Username validation
-	if strings.TrimSpace(username) == "" {
-		errors.UsernameError = "Username is required."
-	}
-
-	// Password validation
-	if strings.TrimSpace(password) == "" {
-		errors.PasswordError = "Password is required."
-	} else if len(password) < 8 {
-		errors.PasswordError = "Password must be at least 8 characters long."
-	}
-
-	// Confirm Password validation
-	if password != confirmPassword {
-		errors.ConfirmPasswordError = "Passwords do not match."
-	}
-
-	return errors
-}
 func productsPageHandler(w http.ResponseWriter, r *http.Request) {
 	// page := r.URL.Query().Get("page")
 	brands := []string{r.URL.Query().Get("brand")}
@@ -628,4 +554,221 @@ func renderBasket(w http.ResponseWriter, equips []db.Laptop) {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
+}
+
+// Secret key for JWT signing
+var secretKey = []byte("SecretYouShouldHide")
+
+func getData(email string, username string, password string, token string) db.User {
+	user := db.User{
+		ID:          primitive.NewObjectID(),
+		Email:       email,
+		Username:    username,
+		Password:    password,
+		CreatedAt:   time.Now(),
+		UpdatedAt:   time.Now(),
+		AccessToken: token,
+	}
+	return user
+}
+
+var verificationCode string
+var newUser db.User
+
+func registerHandler(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/register" {
+		error404PageHandler(w, r)
+		return
+	}
+
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	if r.Method == http.MethodPost {
+		err := r.ParseForm()
+		if err != nil {
+			http.Error(w, "Error parsing form", http.StatusBadRequest)
+			log.Println("Error parsing form:", err)
+			return
+		}
+	}
+
+	// Generate a verification code
+	verificationCode = generateVerificationCode()
+
+	// Send the verification code to the user's email
+	err := sendVerificationCode(r.FormValue("email"), verificationCode)
+	if err != nil {
+		http.Error(w, "Error sending verification code", http.StatusInternalServerError)
+		log.Println("Error sending verification code:", err)
+		return
+	}
+
+	fmt.Println(r.FormValue("email"))
+
+	// Populate newUser with form data
+	newUser = getData(r.FormValue("email"), r.FormValue("username"), r.FormValue("password"), "")
+	fmt.Println(newUser)
+
+	// Hash the password before storing it
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newUser.Password), bcrypt.DefaultCost)
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	// Set the hashed password in newUser
+	newUser.Password = string(hashedPassword)
+
+	http.Redirect(w, r, "/registration/verification", http.StatusSeeOther)
+}
+func confirmVerificationCodeHandler(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/registration/verify" {
+		error404PageHandler(w, r)
+		return
+	}
+
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	if r.Method == http.MethodPost {
+		err := r.ParseForm()
+		if err != nil {
+			http.Error(w, "Error parsing form", http.StatusBadRequest)
+			log.Println("Error parsing form:", err)
+			return
+		}
+	}
+
+	if verificationCode == r.FormValue("verificationCode") {
+		token, err := generateJWT(r.FormValue("password"), r.FormValue("username"))
+		if err != nil {
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+		fmt.Println(token)
+		newUser.AccessToken = token
+		err = db.InsertData(client, newUser)
+		if err != nil {
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+
+		// Set JWT token as HTTP cookie
+		cookie := http.Cookie{
+			Name:     "token",
+			Value:    token,
+			HttpOnly: true,
+			Expires:  time.Now().Add(time.Hour * 1), // Token expires in 1 hour
+		}
+		http.SetCookie(w, &cookie)
+		w.WriteHeader(http.StatusCreated)
+		fmt.Fprint(w, "User successfully registered")
+	} else {
+		// Handle case where verification code is incorrect
+		http.Error(w, "Invalid verification code", http.StatusUnauthorized)
+		return
+	}
+}
+func loginHandler(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/login" { //Damir
+		error404PageHandler(w, r)
+		return
+	} // end damir
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	if r.Method == http.MethodPost {
+		err := r.ParseForm()
+		if err != nil {
+			http.Error(w, "Error parsing form", http.StatusBadRequest)
+			log.Println("Error parsing form:", err)
+			return
+		}
+	}
+	user, err := db.FindUserByEmail(client, r.FormValue("email"))
+
+	// Compare the stored hashed password with the input password
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(r.FormValue("password")))
+	if err != nil {
+		http.Error(w, "Unauthorized: Invalid credentials", http.StatusUnauthorized)
+		return
+	}
+	// cookie, err := r.Cookie("token")
+	// if cookie.Value != user.AccessToken {
+	// 	http.Error(w, "Unauthorized: ", http.StatusUnauthorized)
+	// 	return
+	// }
+	// Generate JWT token
+	token, err := generateJWT(user.Password, user.Username)
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	// Set the token in a cookie
+	newCookie := http.Cookie{
+		Name:     "token",
+		Value:    token,
+		HttpOnly: true,
+		Expires:  time.Now().Add(time.Hour * 1), // Token expires in 1 hour
+	}
+	http.SetCookie(w, &newCookie)
+
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+	db.UpdateUserUsernameByEmail(client, user.Email, "access_token", token)
+	// Return a success response
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Login successful"))
+}
+func generateVerificationCode() string {
+	rand.Seed(time.Now().UnixNano())
+	code := rand.Intn(999999) + 100000
+	return fmt.Sprintf("%06d", code)
+}
+
+func sendVerificationCode(email, code string) error {
+
+	// Set up the authentication credentials for the SMTP server
+	auth := smtp.PlainAuth("", os.Getenv("MAIL"), os.Getenv("SMTP_PASSWORD"), os.Getenv("SMTP_SERVER"))
+
+	// Compose the email message
+	to := []string{email}
+	from := os.Getenv("MAIL")
+	subject := "Verification Code"
+	body := fmt.Sprintf("Your verification code is: %s", code)
+	message := []byte("Subject: " + subject + "\r\n\r\n" + body)
+
+	// Connect to the SMTP server and send the email
+	err := smtp.SendMail(fmt.Sprintf("%s:%s", os.Getenv("SMTP_SERVER"), os.Getenv("SMTP_PORT")), auth, from, to, message)
+	if err != nil {
+		return fmt.Errorf("failed to send email: %v", err)
+	}
+
+	fmt.Printf("Verification code sent to %s\n", email)
+	return nil
+}
+func generateJWT(password string, username string) (string, error) {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"password": password,
+		"username": username,
+		"exp":      time.Now().Add(time.Hour * 1).Unix(), // Token expires in 1 hour
+	})
+
+	// Sign the token with the secret key
+	tokenString, err := token.SignedString(secretKey)
+	if err != nil {
+		return "", err
+	}
+
+	return tokenString, nil
 }

@@ -127,3 +127,18 @@
 {"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-03-01T03:31:06+06:00","timestamp":"2024-03-01T03:31:06+06:00"}
 {"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-03-01T03:32:49+06:00","timestamp":"2024-03-01T03:32:49+06:00"}
 {"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-03-01T03:33:17+06:00","timestamp":"2024-03-01T03:33:17+06:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-03-01T20:31:31+05:00","timestamp":"2024-03-01T20:31:31+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-03-01T20:33:41+05:00","timestamp":"2024-03-01T20:33:41+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-03-01T20:41:19+05:00","timestamp":"2024-03-01T20:41:19+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-03-01T20:50:00+05:00","timestamp":"2024-03-01T20:50:00+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-03-01T20:59:01+05:00","timestamp":"2024-03-01T20:59:01+05:00"}
+{"level":"info","msg":"Error sending verification code: failed to send email: dial tcp: lookup tcp/%!d(string=587): getaddrinfow: The specified class was not found.","time":"2024-03-01T20:59:09+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-03-01T21:00:31+05:00","timestamp":"2024-03-01T21:00:31+05:00"}
+{"level":"info","msg":"Error sending verification code: failed to send email: dial tcp: lookup tcp/%!d(string=587): getaddrinfow: The specified class was not found.","time":"2024-03-01T21:00:35+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-03-01T21:04:46+05:00","timestamp":"2024-03-01T21:04:46+05:00"}
+{"level":"info","msg":"Error sending verification code: failed to send email: dial tcp :587: connectex: No connection could be made because the target machine actively refused it.","time":"2024-03-01T21:04:53+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-03-01T21:05:46+05:00","timestamp":"2024-03-01T21:05:46+05:00"}
+{"level":"info","msg":"Error sending verification code: failed to send email: dial tcp :587: connectex: No connection could be made because the target machine actively refused it.","time":"2024-03-01T21:05:51+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-03-01T21:06:13+05:00","timestamp":"2024-03-01T21:06:13+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-03-01T21:06:45+05:00","timestamp":"2024-03-01T21:06:45+05:00"}
+{"level":"info","msg":"Error sending verification code: failed to send email: dial tcp :587: connectex: No connection could be made because the target machine actively refused it.","time":"2024-03-01T21:06:58+05:00"}

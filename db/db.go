@@ -25,13 +25,13 @@ func init() {
 var client *mongo.Client
 
 type User struct {
-	ID         primitive.ObjectID `bson:"_id"`
-	Name       string             `bson:"name"`
-	Username   string             `bson:"username"`
-	Email      string             `bson:"email"`
-	Password   string             `bson:"password"`
-	Created_at time.Time
-	Updated_at time.Time
+	ID          primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	Email       string             `bson:"email" json:"email"`
+	Username    string             `bson:"username" json:"username"`
+	Password    string             `bson:"password" json:"password"`
+	CreatedAt   time.Time          `bson:"created_at" json:"created_at"`
+	UpdatedAt   time.Time          `bson:"updated_at" json:"updated_at"`
+	AccessToken string             `bson:"access_token" json:"access_token"`
 }
 type Laptop struct {
 	ID          string `bson:"_id"`
@@ -42,13 +42,13 @@ type Laptop struct {
 	Id          string
 }
 
-func InsertData(u User) error {
+func InsertData(client *mongo.Client, u User) error {
 	collection := client.Database("go-assignment-2").Collection("users")
 
 	// Insert user data into the MongoDB collection
 	insertResult, err := collection.InsertOne(context.TODO(), u)
 	if err != nil {
-		log.WithError(err).Error("Error inserting data into MongoDB")
+		log.Println("Error inserting data into MongoDB:", err)
 		return err
 	}
 
@@ -60,7 +60,48 @@ func InsertData(u User) error {
 
 	return nil
 }
+func FindUserByEmail(client *mongo.Client, email string) (*User, error) {
+	collection := client.Database("go-assignment-2").Collection("users")
+	var ctx context.Context
+	// Convert the hex string to an ObjectId
 
+	// filter to find the document by its email
+	filter := bson.M{"email": email}
+
+	// query
+	var user User
+	err := collection.FindOne(ctx, filter).Decode(&user)
+	if err == mongo.ErrNoDocuments {
+		return nil, fmt.Errorf("user not found")
+	} else if err != nil {
+		log.WithError(err).Error("Error finding user by email")
+		return nil, err
+	}
+	return &user, nil
+}
+func UpdateUserUsernameByEmail(client *mongo.Client, email string, field string, value string) error {
+	collection := client.Database("go-assignment-2").Collection("users")
+	var ctx context.Context
+	//  hex string to an ObjectId
+
+	// Specify the filter to find the document by its ID
+	filter := bson.M{"email": email}
+
+	// Specify the update to change by $set
+	update := bson.M{"$set": bson.M{field: value}}
+
+	// Update query
+	updateResult, err := collection.UpdateOne(ctx, filter, update)
+	if err != nil {
+		return err
+	}
+
+	if updateResult.ModifiedCount == 0 {
+		return fmt.Errorf("user not found")
+	}
+
+	return nil
+}
 func FindUserByID(ctx context.Context, client *mongo.Client, databaseName, collectionName, userIDHex string) (*User, error) {
 	collection := client.Database(databaseName).Collection(collectionName)
 

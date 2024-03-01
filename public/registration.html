@@ -10,7 +10,7 @@
     <style>
         /*custom font*/
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
-
+       
         /* Apply Montserrat font to all elements */
         body {
             font-family: 'Montserrat', sans-serif !important;
@@ -22,7 +22,7 @@
             padding: 0;
         }
         footer {
-            margin-top:165px
+            margin-top:250px
         }
         html {
             height: 100%;
@@ -198,14 +198,14 @@
         </div>
         </nav>
     <!-- multistep form -->
-    <form id="msform">
+    <form id="msform" action="/register" method="POST">
         <fieldset>
             <h2 class="fs-title">Create your account</h2>
             <br>
-            <input type="text" name="email" placeholder="Email" />
-            <input type="password" name="pass" placeholder="Password" />
-            <input type="password" name="cpass" placeholder="Confirm Password" />
-            <input type="button" name="submit" class="next action-button" value="Submit" />
+            <input type="text" id="username" name="username" value="" required placeholder="Username" />
+            <input type="email" id="email" name="email" value="" required placeholder="Email" />
+            <input type="password" id="password" name="password" value="" required placeholder="Password" />
+            <input type="submit" value="submit" class="next action-button">
         </fieldset>
     </form>
     <footer class="bg-dark text-white text-center py-3">
