@@ -41,6 +41,13 @@ type Laptop struct {
 	Price       int    `bson:"price"`
 	Id          string
 }
+type Comment struct {
+	ID       string `bson:"_id,omitempty"`
+	LaptopID string `bson:"laptopId"`
+	UserName string `bson:"userName"`
+	Text     string `bson:"text"`
+	Time     string `bson:"time"`
+}
 
 func InsertData(client *mongo.Client, u User) error {
 	collection := client.Database("go-assignment-2").Collection("users")
@@ -446,4 +453,76 @@ func AddProduct(brand string, model string, description string, price int) error
 
 	return nil
 }
+func AddComment(username, text, laptopID string) error {
+	// Установка соединения с MongoDB
+	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://localhost:27017"))
+	if err != nil {
+		return err
+	}
+	ctx := context.TODO()
+	err = client.Connect(ctx)
+	if err != nil {
+		return err
+	}
+	defer client.Disconnect(ctx)
 
+	// Получение доступа к коллекции комментариев
+	collection := client.Database("go-assignment-2").Collection("comments")
+
+	// Создание нового комментария
+	newComment := Comment{
+		UserName: username,
+		Text:     text,
+		LaptopID: laptopID,
+		Time:     time.Now().Format(time.RFC822),
+	}
+
+	// Вставка нового комментария в базу данных
+	_, err = collection.InsertOne(ctx, newComment)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+func GetCommentsByLaptop(laptopID string) ([]Comment, error) {
+	// Установка соединения с MongoDB
+	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://localhost:27017"))
+	if err != nil {
+		return nil, err
+	}
+	ctx := context.TODO()
+	err = client.Connect(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer client.Disconnect(ctx)
+
+	// Получение доступа к коллекции комментариев
+	collection := client.Database("go-assignment-2").Collection("comments")
+
+	// Задание фильтра для поиска комментариев по laptopId
+	filter := bson.M{"laptopId": laptopID}
+
+	// Выполнение запроса к базе данных
+	cursor, err := collection.Find(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	// Декодирование результатов запроса
+	var comments []Comment
+	for cursor.Next(ctx) {
+		var comment Comment
+		if err := cursor.Decode(&comment); err != nil {
+			return nil, err
+		}
+		comments = append(comments, comment)
+	}
+	if err := cursor.Err(); err != nil {
+		return nil, err
+	}
+
+	return comments, nil
+}

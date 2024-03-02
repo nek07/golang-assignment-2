@@ -4,6 +4,7 @@ import (
 	"context"
 	_ "context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -139,6 +140,8 @@ func main() {
 	r.HandleFunc("/admin", verifyToken(rateLimitedHandler(handleAdmin)))
 	r.HandleFunc("/products", verifyToken(rateLimitedHandler(productsPageHandler)))
 	r.HandleFunc("/product/{id}", verifyToken(handleConcreteProduct))
+	r.HandleFunc("/product/{id}/add-comment", verifyToken(rateLimitedHandler(addCommentHandler)))
+	r.HandleFunc("/product/{id}/get-comments", verifyToken(rateLimitedHandler(getCommentHandler)))
 	r.HandleFunc("/admin/delete/{id}", verifyToken(rateLimitedHandler(handleDeleteProduct)))
 	r.HandleFunc("/admin/edit/{id}", verifyToken(rateLimitedHandler(handleEditProduct)))
 	r.HandleFunc("/admin/add", verifyToken(rateLimitedHandler(addProdHandle)))
@@ -146,7 +149,6 @@ func main() {
 	r.HandleFunc("/product/{id}/addToBasket", verifyToken(rateLimitedHandler(addToCartHandler)))
 	r.HandleFunc("/view-cart", verifyToken(rateLimitedHandler(viewCartHandler)))
 	r.HandleFunc("/remove-from-cart/{id}", verifyToken(rateLimitedHandler(removeFromCartHandler)))
-
 
 	port := 8080
 	fmt.Printf("Server is running on http://localhost:%d\n", port)
@@ -852,25 +854,119 @@ func basketHandler(w http.ResponseWriter, r *http.Request) {
 // Handler for removing an item from the shopping cart
 // Handler for removing items from the shopping cart
 func removeFromCartHandler(w http.ResponseWriter, r *http.Request) {
-    // Retrieve item ID from request parameters
-    vars := mux.Vars(r)
-    laptopID := vars["id"]
+	// Retrieve item ID from request parameters
+	vars := mux.Vars(r)
+	laptopID := vars["id"]
 
-    // Retrieve existing shopping cart from cookie
-    cart := getCartFromCookie(r)
+	// Retrieve existing shopping cart from cookie
+	cart := getCartFromCookie(r)
 
-    // Find and remove the item from the shopping cart
-    for i, item := range cart.Items {
-        if item.ID == laptopID {
-            // Remove the item from the slice
-            cart.Items = append(cart.Items[:i], cart.Items[i+1:]...)
-            break
-        }
-    }
+	// Find and remove the item from the shopping cart
+	for i, item := range cart.Items {
+		if item.ID == laptopID {
+			// Remove the item from the slice
+			cart.Items = append(cart.Items[:i], cart.Items[i+1:]...)
+			break
+		}
+	}
 
-    // Save the updated shopping cart to cookie
-    saveCartToCookie(w, cart)
+	// Save the updated shopping cart to cookie
+	saveCartToCookie(w, cart)
 
-    fmt.Fprintf(w, "Item removed from cart successfully!")
+	fmt.Fprintf(w, "Item removed from cart successfully!")
 }
 
+func getUsernameFromToken(tokenString string) (string, error) {
+	// Парсим токен с помощью секретного ключа
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		// Проверяем, что токен использует алгоритм подписи HMAC и возвращаем секретный ключ
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+		return secretKey, nil
+	})
+	if err != nil {
+		return "", err
+	}
+
+	// Проверяем, что токен действителен
+	if !token.Valid {
+		return "", errors.New("invalid token")
+	}
+
+	// Извлекаем данные пользователя из токена
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return "", errors.New("error parsing claims")
+	}
+
+	// Извлекаем username из claims
+	username, ok := claims["username"].(string)
+	if !ok {
+		return "", errors.New("error getting username from claims")
+	}
+
+	return username, nil
+}
+
+func addCommentHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodPost {
+		text := r.URL.Query().Get("text")
+		vars := mux.Vars(r)
+		laptopID := vars["id"]
+		cookie, err := r.Cookie("token")
+		if err != nil {
+			http.Redirect(w, r, "/logins", http.StatusSeeOther)
+			return
+		}
+
+		token := cookie.Value
+		if token == "" {
+			// Токен отсутствует или недействителен, возвращаем ошибку
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		// Извлекаем username из токена
+		username, err := getUsernameFromToken(token)
+		if err != nil {
+			// Ошибка при извлечении username, возвращаем ошибку
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+		err = db.AddComment(username, text, laptopID)
+	} else {
+		error404PageHandler(w, r)
+		return
+	}
+}
+func getCommentHandler(w http.ResponseWriter, r *http.Request) {
+	// Проверяем, что метод запроса GET
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Получаем параметры из URL
+	params := mux.Vars(r)
+	laptopID := params["id"]
+
+	// Получаем комментарии для указанного ноутбука
+	comments, err := db.GetCommentsByLaptop(laptopID)
+	if err != nil {
+		http.Error(w, "Failed to get comments", http.StatusInternalServerError)
+		return
+	}
+
+	// Преобразуем комментарии в формат JSON
+	jsonResponse, err := json.Marshal(comments)
+	if err != nil {
+		http.Error(w, "Failed to marshal comments", http.StatusInternalServerError)
+
+		return
+	}
+	// Отправляем ответ с JSON данными
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(jsonResponse)
+}

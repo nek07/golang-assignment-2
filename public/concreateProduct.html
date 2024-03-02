@@ -62,6 +62,22 @@
             </div>
         </div>
     </div>
+
+    <div class="container mt-5 mb-5">
+        <h3>Comments</h3>
+        <textarea id="text" class="form-control mt-5"></textarea>
+        <button onclick="addComment()" class="btn btn-outline-info w-100 mt-2 mb-4">Add Comment</button>
+        <hr>
+        <div id="comments">
+
+        </div>
+
+
+    </div>
+
+
+
+
     <script>
         function addToCart(productId) {
             let result;
@@ -72,10 +88,57 @@
         function basketRedirect() {
             window.location.href = '/basket'
         }
-        
+        function addComment() {
+            fetch("/product/" + document.getElementById('id').innerHTML + "/add-comment?text=" + document.getElementById('text').value, {
+                method: 'POST'
+            })
+            window.location.href = window.location.href;
+        }
+        function loadCart() {
+            fetch("/product/" + document.getElementById('id').innerHTML + "/get-comments")
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch comments');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log("Data:", data);
+                    // Проверяем, что данные не пусты
+                    if (data && Array.isArray(data)) {
+                        // Отобразить содержимое корзины на странице
+                        const cartContainer = document.getElementById("comments");
+                        cartContainer.innerHTML = "";
+                        data.forEach(item => {
+                            const itemElement = document.createElement("div");
+                            itemElement.style.backgroundColor = "whitesmoke";
+                            itemElement.style.padding = "10px";
+                            itemElement.style.borderRadius = "10px";
+                            itemElement.style.marginTop = "30px";
+                            const usernameElement = document.createElement("h6");
+                            usernameElement.innerHTML = `<strong>${item.UserName}</strong>`;
+                            const commentElement = document.createElement("p");
+                            commentElement.textContent = item.Text;
+                            const dateElement = document.createElement("i");
+                            dateElement.textContent = item.Time;
+                            itemElement.appendChild(usernameElement);
+                            itemElement.appendChild(commentElement);
+                            itemElement.appendChild(dateElement);
+                            cartContainer.appendChild(itemElement);
+                        });
+                    } else {
+                        console.error("Invalid or empty data returned");
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        }
 
 
+
+        loadCart()
     </script>
+</body>
+
 </body>
 
 </html>
