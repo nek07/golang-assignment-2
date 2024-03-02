@@ -131,14 +131,14 @@ func handleRoutes() {
 	r.HandleFunc("/updateUser", verifyToken(rateLimitedHandler(handleUpdateUser)))
 	r.HandleFunc("/deleteUser", verifyToken(rateLimitedHandler(handleDeleteUser)))
 	r.HandleFunc("/getAllUsers", verifyToken(rateLimitedHandler(handleGetAllUsers)))
-	r.HandleFunc("/admin", verifyToken(rateLimitedHandler(handleAdmin)))
+	r.HandleFunc("/admin", verifyRole(verifyToken(rateLimitedHandler(handleAdmin))))
 	r.HandleFunc("/products", verifyToken(productsPageHandler))
 	r.HandleFunc("/product/{id}", verifyToken(handleConcreteProduct))
 	r.HandleFunc("/product/{id}/add-comment", verifyToken(rateLimitedHandler(addCommentHandler)))
 	r.HandleFunc("/product/{id}/get-comments", verifyToken(rateLimitedHandler(getCommentHandler)))
-	r.HandleFunc("/admin/delete/{id}", verifyToken(rateLimitedHandler(handleDeleteProduct)))
-	r.HandleFunc("/admin/edit/{id}", verifyToken(rateLimitedHandler(handleEditProduct)))
-	r.HandleFunc("/admin/add", verifyToken(rateLimitedHandler(addProdHandle)))
+	r.HandleFunc("/admin/delete/{id}", verifyRole(verifyToken(rateLimitedHandler(handleDeleteProduct))))
+	r.HandleFunc("/admin/edit/{id}", verifyRole(verifyToken(rateLimitedHandler(handleEditProduct))))
+	r.HandleFunc("/admin/add", verifyRole(verifyToken(rateLimitedHandler(addProdHandle))))
 	r.HandleFunc("/basket", verifyToken(rateLimitedHandler(basketHandler)))
 	r.HandleFunc("/product/{id}/addToBasket", verifyToken(rateLimitedHandler(addToCartHandler)))
 	r.HandleFunc("/view-cart", verifyToken(rateLimitedHandler(viewCartHandler)))
@@ -545,7 +545,7 @@ func addProdHandle(w http.ResponseWriter, r *http.Request) {
 // Secret key for JWT signing
 var secretKey = []byte("SecretYouShouldHide")
 
-func getData(email string, username string, password string, token string) db.User {
+func getData(email string, username string, password string, token string, role string) db.User {
 	user := db.User{
 		ID:          primitive.NewObjectID(),
 		Email:       email,
@@ -554,6 +554,7 @@ func getData(email string, username string, password string, token string) db.Us
 		CreatedAt:   time.Now(),
 		UpdatedAt:   time.Now(),
 		AccessToken: token,
+		Role:        role,
 	}
 	return user
 }
@@ -580,7 +581,10 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-
+	user, _ := db.FindUserByEmail(client, r.FormValue("email"))
+	if user != nil {
+		http.Redirect(w, r, "/logins", http.StatusSeeOther)
+	}
 	// Generate a verification code
 	verificationCode = generateVerificationCode()
 
@@ -595,7 +599,7 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(r.FormValue("email"))
 
 	// Populate newUser with form data
-	newUser = getData(r.FormValue("email"), r.FormValue("username"), r.FormValue("password"), "")
+	newUser = getData(r.FormValue("email"), r.FormValue("username"), r.FormValue("password"), "", "USER")
 	fmt.Println(newUser)
 
 	// Hash the password before storing it
@@ -609,6 +613,32 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 	newUser.Password = string(hashedPassword)
 
 	http.Redirect(w, r, "/registration/verification", http.StatusSeeOther)
+}
+func verifyRole(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// Extract the token from the request cookie
+		cookie, err := r.Cookie("token")
+		if err != nil {
+			http.Redirect(w, r, "/error", http.StatusSeeOther)
+			return
+		}
+
+		token := cookie.Value
+
+		// Verify the token and retrieve user information
+		user, err := db.FindUserByToken(client, token)
+
+		if user.Role != "ADMIN" {
+			http.Redirect(w, r, "/error", http.StatusSeeOther)
+			return
+		}
+		// Store user information in the request context
+		ctx := context.WithValue(r.Context(), "user", user)
+
+		// Call the next handler in the chain with the updated request context
+		next.ServeHTTP(w, r.WithContext(ctx))
+	}
+
 }
 func verifyToken(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {

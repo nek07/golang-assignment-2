@@ -32,6 +32,7 @@ type User struct {
 	CreatedAt   time.Time          `bson:"created_at" json:"created_at"`
 	UpdatedAt   time.Time          `bson:"updated_at" json:"updated_at"`
 	AccessToken string             `bson:"access_token" json:"access_token"`
+	Role        string             `bson:"role" json:"role"`
 }
 type Laptop struct {
 	ID          string `bson:"_id"`
@@ -564,33 +565,32 @@ func GetCommentsByLaptop(laptopID string) ([]Comment, error) {
 	return comments, nil
 }
 func UpdateAccount(id string, username string, email string) error {
-    // Инициализация клиента MongoDB
-    client, err := mongo.NewClient(options.Client().ApplyURI(uri))
-    if err != nil {
-        return fmt.Errorf("Error creating MongoDB client: %v", err)
-    }
+	// Инициализация клиента MongoDB
+	client, err := mongo.NewClient(options.Client().ApplyURI(uri))
+	if err != nil {
+		return fmt.Errorf("Error creating MongoDB client: %v", err)
+	}
 
-    // Подключение к базе данных
-    ctx := context.TODO()
-    err = client.Connect(ctx)
-    if err != nil {
-        return fmt.Errorf("Error connecting to MongoDB: %v", err)
-    }
-    defer client.Disconnect(ctx)
+	// Подключение к базе данных
+	ctx := context.TODO()
+	err = client.Connect(ctx)
+	if err != nil {
+		return fmt.Errorf("Error connecting to MongoDB: %v", err)
+	}
+	defer client.Disconnect(ctx)
 
-    // Получение коллекции "accounts"
-    collection := client.Database("go-assignment-2").Collection("users")
+	// Получение коллекции "accounts"
+	collection := client.Database("go-assignment-2").Collection("users")
 
-    // Подготовка данных для обновления
-    filter := bson.M{"email": id}
-    update := bson.M{"$set": bson.M{"username": username, "email": email}}
+	// Подготовка данных для обновления
+	filter := bson.M{"email": id}
+	update := bson.M{"$set": bson.M{"username": username, "email": email}}
 
-    // Выполнение обновления
-    _, err = collection.UpdateOne(ctx, filter, update)
-    if err != nil {
-        return fmt.Errorf("Error updating account: %v", err)
-    }
+	// Выполнение обновления
+	_, err = collection.UpdateOne(ctx, filter, update)
+	if err != nil {
+		return fmt.Errorf("Error updating account: %v", err)
+	}
 
-    return nil
+	return nil
 }
-
