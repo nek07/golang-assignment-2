@@ -142,7 +142,7 @@ func handleRoutes() {
 	r.HandleFunc("/view-cart", verifyToken(rateLimitedHandler(viewCartHandler)))
 	r.HandleFunc("/remove-from-cart/{id}", verifyToken(rateLimitedHandler(removeFromCartHandler)))
 
-	port := 8080
+	port := 1000
 	fmt.Printf("Server is running on http://localhost:%d\n", port)
 	// Использование маршрутизатора вместо http.ListenAndServe
 	err := http.ListenAndServe(fmt.Sprintf(":%d", port), r)
