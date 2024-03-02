@@ -75,8 +75,7 @@ func init() {
 	// Close the log file when the application exits
 	defer logfile.Close()
 }
-
-func main() {
+func connectDB() {
 	uri := uri
 	file, _ := os.OpenFile("logs.txt", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 
@@ -112,15 +111,8 @@ func main() {
 	}
 
 	fmt.Println("Connected to MongoDB Atlas!")
-
-	// Perform migration
-	err = db.AddNewField(ctx, client)
-	if err != nil {
-		log.WithError(err).Fatal("Error during migration")
-	}
-
-	fmt.Println("Migration executed successfully.")
-
+}
+func handleRoutes() {
 	r := mux.NewRouter()
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("public"))))
 	// Регистрация обработчиков для маршрутов
@@ -138,9 +130,9 @@ func main() {
 	r.HandleFunc("/deleteUser", verifyToken(rateLimitedHandler(handleDeleteUser)))
 	r.HandleFunc("/getAllUsers", verifyToken(rateLimitedHandler(handleGetAllUsers)))
 	r.HandleFunc("/admin", verifyToken(rateLimitedHandler(handleAdmin)))
-	r.HandleFunc("/products", verifyToken(rateLimitedHandler(productsPageHandler)))
-	r.HandleFunc("/product/{id}", verifyToken(handleConcreteProduct))
-	r.HandleFunc("/product/{id}/add-comment", verifyToken(rateLimitedHandler(addCommentHandler)))
+	r.HandleFunc("/products", productsPageHandler)
+	r.HandleFunc("/product/{id}", handleConcreteProduct)
+	r.HandleFunc("/product/{id}/add-comment", rateLimitedHandler(addCommentHandler))
 	r.HandleFunc("/product/{id}/get-comments", verifyToken(rateLimitedHandler(getCommentHandler)))
 	r.HandleFunc("/admin/delete/{id}", verifyToken(rateLimitedHandler(handleDeleteProduct)))
 	r.HandleFunc("/admin/edit/{id}", verifyToken(rateLimitedHandler(handleEditProduct)))
@@ -153,15 +145,19 @@ func main() {
 	port := 8080
 	fmt.Printf("Server is running on http://localhost:%d\n", port)
 	// Использование маршрутизатора вместо http.ListenAndServe
-	err = http.ListenAndServe(fmt.Sprintf(":%d", port), r)
+	err := http.ListenAndServe(fmt.Sprintf(":%d", port), r)
 	if err != nil {
 		log.WithError(err).Error("Error starting server")
 	}
+}
+func main() {
+	connectDB()
+	handleRoutes()
 	// Disconnect from MongoDB
-	err = client.Disconnect(ctx)
-	if err != nil {
-		log.WithError(err).Error("Error disconnecting from MongoDB")
-	}
+	// err = client.Disconnect(ctx)
+	// if err != nil {
+	// 	log.WithError(err).Error("Error disconnecting from MongoDB")
+	// }
 
 }
 func homeHandler(w http.ResponseWriter, r *http.Request) {
@@ -298,7 +294,7 @@ func productsPageHandler(w http.ResponseWriter, r *http.Request) {
 		"timestamp": time.Now().Format(time.RFC3339),
 	}).Info("User filtered products")
 	if err != nil {
-		log.Fatal("Error calling FindProductsWithFilters: %v", err)
+		log.Fatal(err)
 	}
 	data := Data{
 		Laptops:       result,
@@ -680,24 +676,27 @@ func confirmVerificationCodeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 func loginHandler(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/login" { //Damir
+	if r.URL.Path != "/login" {
 		error404PageHandler(w, r)
 		return
-	} // end damir
+	}
+
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
-	if r.Method == http.MethodPost {
-		err := r.ParseForm()
-		if err != nil {
-			http.Error(w, "Error parsing form", http.StatusBadRequest)
-			log.Println("Error parsing form:", err)
-			return
-		}
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "Error parsing form", http.StatusBadRequest)
+		log.Println("Error parsing form:", err)
+		return
 	}
+
 	user, err := db.FindUserByEmail(client, r.FormValue("email"))
+	if err != nil {
+		http.Error(w, "Unauthorized: Invalid credentials", http.StatusUnauthorized)
+		return
+	}
 
 	// Compare the stored hashed password with the input password
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(r.FormValue("password")))
@@ -705,11 +704,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Unauthorized: Invalid credentials", http.StatusUnauthorized)
 		return
 	}
-	// cookie, err := r.Cookie("token")
-	// if cookie.Value != user.AccessToken {
-	// 	http.Error(w, "Unauthorized: ", http.StatusUnauthorized)
-	// 	return
-	// }
+
 	// Generate JWT token
 	token, err := generateJWT(user.Password, user.Username)
 	if err != nil {
@@ -726,20 +721,21 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	http.SetCookie(w, &newCookie)
 
-	if err != nil {
+	// Update user's access token in the database
+	if err := db.UpdateUserUsernameByEmail(client, user.Email, "access_token", token); err != nil {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
-	db.UpdateUserUsernameByEmail(client, user.Email, "access_token", token)
+
 	// Return a success response
 	fmt.Print("Login success")
 	http.Redirect(w, r, "/home", http.StatusSeeOther)
-
 }
+
 func generateVerificationCode() string {
 	rand.Seed(time.Now().UnixNano())
 	code := rand.Intn(999999) + 100000
-	return fmt.Sprintf("%06d", code)
+	return fmt.Sprintf("%05d", code)
 }
 
 func sendVerificationCode(email, code string) error {

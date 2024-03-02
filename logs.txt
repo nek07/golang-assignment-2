@@ -331,3 +331,30 @@
 {"action":"filter_products","brands":[""],"level":"info","maxPrice":999999999,"minPrice":0,"msg":"User filtered products","page":1,"sortBy":"","time":"2024-03-02T07:06:19+06:00","timestamp":"2024-03-02T07:06:19+06:00"}
 {"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-03-02T07:23:20+06:00","timestamp":"2024-03-02T07:23:20+06:00"}
 {"action":"filter_products","brands":[""],"level":"info","maxPrice":999999999,"minPrice":0,"msg":"User filtered products","page":1,"sortBy":"","time":"2024-03-02T07:23:32+06:00","timestamp":"2024-03-02T07:23:32+06:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-03-02T07:25:22+05:00","timestamp":"2024-03-02T07:25:22+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-03-02T07:29:44+05:00","timestamp":"2024-03-02T07:29:44+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-03-02T07:50:26+05:00","timestamp":"2024-03-02T07:50:26+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-03-02T07:58:29+05:00","timestamp":"2024-03-02T07:58:29+05:00"}
+{"level":"info","msg":"Error sending verification code: failed to send email: 555 5.5.2 Syntax error, cannot decode response. For more information, go to\n5.5.2  https://support.google.com/a/answer/3221692 and review RFC 5321\n5.5.2 specifications. u26-20020ac25bda000000b005133b2d1acasm92025lfn.50 - gsmtp","time":"2024-03-02T07:58:32+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-03-02T08:00:15+05:00","timestamp":"2024-03-02T08:00:15+05:00"}
+{"level":"info","msg":"Error sending verification code: failed to send email: 555 5.5.2 Syntax error, cannot decode response. For more information, go to\n5.5.2  https://support.google.com/a/answer/3221692 and review RFC 5321\n5.5.2 specifications. s22-20020a195e16000000b00512d252759bsm835835lfb.212 - gsmtp","time":"2024-03-02T08:00:18+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-03-02T08:03:21+05:00","timestamp":"2024-03-02T08:03:21+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-03-02T08:07:47+05:00","timestamp":"2024-03-02T08:07:47+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-03-02T08:09:17+05:00","timestamp":"2024-03-02T08:09:17+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-03-02T08:11:04+05:00","timestamp":"2024-03-02T08:11:04+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-03-02T08:11:45+05:00","timestamp":"2024-03-02T08:11:45+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-03-02T08:17:33+05:00","timestamp":"2024-03-02T08:17:33+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-03-02T08:17:53+05:00","timestamp":"2024-03-02T08:17:53+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-03-02T08:18:30+05:00","timestamp":"2024-03-02T08:18:30+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-03-02T08:19:30+05:00","timestamp":"2024-03-02T08:19:30+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-03-02T08:19:57+05:00","timestamp":"2024-03-02T08:19:57+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-03-02T08:20:15+05:00","timestamp":"2024-03-02T08:20:15+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-03-02T09:03:41+05:00","timestamp":"2024-03-02T09:03:41+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-03-02T09:04:49+05:00","timestamp":"2024-03-02T09:04:49+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-03-02T09:11:39+05:00","timestamp":"2024-03-02T09:11:39+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-03-02T09:12:28+05:00","timestamp":"2024-03-02T09:12:27+05:00"}
+{"action":"filter_products","brands":[""],"level":"info","maxPrice":999999999,"minPrice":0,"msg":"User filtered products","page":1,"sortBy":"","time":"2024-03-02T09:12:45+05:00","timestamp":"2024-03-02T09:12:45+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-03-02T09:14:03+05:00","timestamp":"2024-03-02T09:14:03+05:00"}
+{"action":"filter_products","brands":[""],"level":"info","maxPrice":999999999,"minPrice":0,"msg":"User filtered products","page":1,"sortBy":"","time":"2024-03-02T09:14:25+05:00","timestamp":"2024-03-02T09:14:25+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-03-02T09:15:03+05:00","timestamp":"2024-03-02T09:15:03+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-03-02T09:15:36+05:00","timestamp":"2024-03-02T09:15:36+05:00"}

@@ -8,6 +8,8 @@ require (
 )
 
 require (
+	github.com/blang/semver v3.5.1+incompatible // indirect
+	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/eminetto/mongo-migrate v0.1.4 // indirect
 	github.com/globalsign/mgo v0.0.0-20181015135952-eeefdecb41b8 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
@@ -15,7 +17,11 @@ require (
 	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/klauspost/compress v1.13.6 // indirect
 	github.com/montanaflynn/stats v0.0.0-20171201202039-1bf9dbcd8cbe // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/sclevine/agouti v3.0.0+incompatible // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
+	github.com/stretchr/testify v1.9.0 // indirect
+	github.com/tebeka/selenium v0.9.9 // indirect
 	github.com/xdg-go/pbkdf2 v1.0.0 // indirect
 	github.com/xdg-go/scram v1.1.2 // indirect
 	github.com/xdg-go/stringprep v1.0.4 // indirect
@@ -25,4 +31,5 @@ require (
 	golang.org/x/sync v0.0.0-20220722155255-886fb9371eb4 // indirect
 	golang.org/x/sys v0.16.0 // indirect
 	golang.org/x/text v0.7.0 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
