@@ -123,6 +123,7 @@ func handleRoutes() {
 	r.HandleFunc("/logins", loginPageHandler)
 	r.HandleFunc("/login", loginHandler)
 	r.HandleFunc("/register", registerHandler)
+	r.HandleFunc("/admin/submitNewsletter", newsletterHandler)
 	r.HandleFunc("/error", rateLimitedHandler(errorPageHandler))
 	r.HandleFunc("/crud", verifyToken(rateLimitedHandler(crudHandler)))
 	r.HandleFunc("/getUser", verifyToken(rateLimitedHandler(handleGetUser)))
@@ -142,7 +143,7 @@ func handleRoutes() {
 	r.HandleFunc("/view-cart", verifyToken(rateLimitedHandler(viewCartHandler)))
 	r.HandleFunc("/remove-from-cart/{id}", verifyToken(rateLimitedHandler(removeFromCartHandler)))
 
-	port := 1000
+	port := 10000
 	fmt.Printf("Server is running on http://localhost:%d\n", port)
 	// Использование маршрутизатора вместо http.ListenAndServe
 	err := http.ListenAndServe(fmt.Sprintf(":%d", port), r)
@@ -758,6 +759,54 @@ func sendVerificationCode(email, code string) error {
 
 	fmt.Printf("Verification code sent to %s\n", email)
 	return nil
+}
+func sendMessageToAllEmails(subject string, info string) error {
+	// Set up the authentication credentials for the SMTP server
+	auth := smtp.PlainAuth("", os.Getenv("MAIL"), os.Getenv("SMTP_PASSWORD"), os.Getenv("SMTP_SERVER"))
+	emails, err := db.GetUserEmails(client)
+	if err != nil {
+		return fmt.Errorf("failed to get user emails: %v", err)
+	}
+
+	// Compose the email message
+	from := os.Getenv("MAIL")
+	message := []byte("Subject: " + subject + "\r\n\r\n" + info)
+
+	// Loop through each email and send the message
+	for _, email := range emails {
+		to := []string{email}
+		err := smtp.SendMail(fmt.Sprintf("%s:%s", os.Getenv("SMTP_SERVER"), os.Getenv("SMTP_PORT")), auth, from, to, message)
+		if err != nil {
+			// Log or handle the error as needed
+			fmt.Printf("Failed to send message to %s: %v\n", email, err)
+		} else {
+			fmt.Printf("Message sent to %s\n", email)
+		}
+	}
+
+	return nil
+}
+func newsletterHandler(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/admin/submitNewsletter" {
+		error404PageHandler(w, r)
+		return
+	}
+
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "Error parsing form", http.StatusBadRequest)
+		log.Println("Error parsing form:", err)
+		return
+	}
+	err := sendMessageToAllEmails(r.FormValue("subject"), r.FormValue("info"))
+	if err != nil {
+		fmt.Print(err)
+	}
+	fmt.Print("sended success")
 }
 func generateJWT(password string, username string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{

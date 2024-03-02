@@ -12,7 +12,19 @@
 <body>
   <div class="container">
     <h1 class="text-center pt-5">Admin Panel - Product Management</h1>
-
+    <form action="/admin/submitNewsletter" method="post">
+      <label for="title">Subject:</label>
+      <input type="text" id="subject" name="subject" required>
+  
+      <br>
+  
+      <label for="text">Text:</label>
+      <textarea id="info" name="info" rows="4" required></textarea>
+  
+      <br>
+  
+      <input type="submit" value="Submit">
+    </form>
     <!-- Form for adding a new product -->
     <form class="mt-5 mb-5" id="addForm">
       <h2>Add New Product</h2>

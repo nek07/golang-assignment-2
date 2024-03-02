@@ -148,7 +148,7 @@ func TestWebPageInteractions(t *testing.T) {
 	service, webDriver := startWebDriver(t)
 	defer stopWebDriver(t, service, webDriver)
 
-	if err := webDriver.Get("http://localhost:1000/products"); err != nil {
+	if err := webDriver.Get("http://localhost:10000/products"); err != nil {
 		t.Fatalf("Failed to navigate to the web page: %v", err)
 	}
 

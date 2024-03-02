@@ -132,6 +132,43 @@ func FindUserByID(ctx context.Context, client *mongo.Client, databaseName, colle
 	}
 	return &user, nil
 }
+func GetUserEmails(client *mongo.Client) ([]string, error) {
+	// Access the "users" collection in the "your_database" database
+	collection := client.Database("go-assignment-2").Collection("users")
+
+	// Set a timeout for the database operation
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	// Define the filter to retrieve all documents
+	filter := bson.D{{}}
+
+	// Perform the find operation
+	cursor, err := collection.Find(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	// Create a slice to store the user emails
+	var emails []string
+
+	// Iterate through the cursor and append each email to the slice
+	for cursor.Next(ctx) {
+		var user User
+		if err := cursor.Decode(&user); err != nil {
+			return nil, err
+		}
+		emails = append(emails, user.Email)
+	}
+
+	// Check for errors during cursor iteration
+	if err := cursor.Err(); err != nil {
+		return nil, err
+	}
+
+	return emails, nil
+}
 func FindUserByToken(client *mongo.Client, token string) (*User, error) {
 	collection := client.Database("go-assignment-2").Collection("users")
 	var ctx context.Context
