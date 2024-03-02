@@ -133,7 +133,9 @@ func handleRoutes() {
 	r.HandleFunc("/getAllUsers", verifyToken(rateLimitedHandler(handleGetAllUsers)))
 	r.HandleFunc("/admin", verifyRole(verifyToken(rateLimitedHandler(handleAdmin))))
 	r.HandleFunc("/products", verifyToken(productsPageHandler))
-	r.HandleFunc("/product/{id}", verifyToken(handleConcreteProduct))
+	r.HandleFunc("/productsTest", productsPageHandler)
+
+	r.HandleFunc("/product/{id}", handleConcreteProduct)
 	r.HandleFunc("/product/{id}/add-comment", verifyToken(rateLimitedHandler(addCommentHandler)))
 	r.HandleFunc("/product/{id}/get-comments", verifyToken(rateLimitedHandler(getCommentHandler)))
 	r.HandleFunc("/admin/delete/{id}", verifyRole(verifyToken(rateLimitedHandler(handleDeleteProduct))))
@@ -581,10 +583,10 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	user, _ := db.FindUserByEmail(client, r.FormValue("email"))
-	if user != nil {
-		http.Redirect(w, r, "/logins", http.StatusSeeOther)
-	}
+	// user, _ := db.FindUserByEmail(client, r.FormValue("email"))
+	// if user != nil {
+	// 	http.Redirect(w, r, "/logins", http.StatusSeeOther)
+	// }
 	// Generate a verification code
 	verificationCode = generateVerificationCode()
 

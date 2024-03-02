@@ -1,11 +1,11 @@
 package main
 
 import (
-	"fmt"
 	"math/rand"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"os"
 	"regexp"
 	"strings"
 	"testing"
@@ -13,20 +13,21 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/tebeka/selenium"
+	"github.com/tebeka/selenium/chrome"
 )
 
-// Assuming your testing function is within a *_test.go file
+// Mock data and functions for testing
 
 func TestLoginHandler(t *testing.T) {
-
+	// Assuming your connectDB() function initializes the database connection
 	connectDB()
 
 	// Set up a mock HTTP server
-	router := setupRouter() // Assuming you have a setupRouter function
+	router := setupRouter()
 
 	// Prepare login form values
 	form := url.Values{}
-	form.Set("email", "ataytoleuov05@gmail.com")
+	form.Set("email", "ataytoleuov015@gmail.com")
 	form.Set("password", "12345678")
 
 	// Prepare login payload
@@ -48,11 +49,13 @@ func TestLoginHandler(t *testing.T) {
 	// Assert the response status code
 	assert.Equal(t, http.StatusSeeOther, loginResponse.Code)
 
+	// Log the response body for debugging (optional)
 	t.Log(loginResponse.Body.String())
 }
+
 func TestRegisterHandler(t *testing.T) {
 	// Set up a mock HTTP server
-	router := setupRouter() // Assuming you have a setupRouter function
+	router := setupRouter()
 
 	// Prepare registration form values
 	form := url.Values{}
@@ -78,18 +81,8 @@ func TestRegisterHandler(t *testing.T) {
 
 	// Assert the response status code
 	assert.Equal(t, http.StatusSeeOther, registerResponse.Code)
-	t.Log(registerResponse.Body.String())
 }
-func setupRouter() *http.ServeMux {
-	router := http.NewServeMux()
 
-	// Replace these with your actual registration, verification, and login handlers
-	router.HandleFunc("/register", registerHandler)
-	router.HandleFunc("/registration/verify", confirmVerificationCodeHandler)
-	router.HandleFunc("/login", loginHandler)
-
-	return router
-}
 func TestGenerateVerificationCode(t *testing.T) {
 	// Set a fixed seed for the random number generator to ensure reproducibility
 	randSeed := time.Now().UnixNano()
@@ -102,76 +95,96 @@ func TestGenerateVerificationCode(t *testing.T) {
 	assert.Regexp(t, regexp.MustCompile(`^\d{6}$`), verificationCode)
 }
 
-// Add other test functions for additional scenarios if needed
+func setupRouter() *http.ServeMux {
+	router := http.NewServeMux()
 
-func startWebDriver(t *testing.T) (*selenium.Service, selenium.WebDriver) {
+	// Replace these with your actual registration, verification, and login handlers
+	router.HandleFunc("/register", registerHandler)
+	router.HandleFunc("/registration/verify", confirmVerificationCodeHandler)
+	router.HandleFunc("/login", loginHandler)
 
-	opts := []selenium.ServiceOption{}
-	service, err := selenium.NewChromeDriverService("C:/Users/abyla/OneDrive/Рабочий стол/chromedriver.exe", 4444, opts...)
-	if err != nil {
-		t.Fatalf("Failed to start ChromeDriver service: %v", err)
-	}
-
-	caps := selenium.Capabilities{
-		"browserName": "chrome",
-		"chromeOptions": map[string][]string{
-			"args": []string{
-				"--headless",
-			},
-		},
-	}
-
-	webDriver, err := selenium.NewRemote(caps, fmt.Sprintf("http://localhost:%d/wd/hub", 4444))
-	if err != nil {
-		t.Fatalf("Failed to create new WebDriver session: %v", err)
-	}
-
-	return service, webDriver
+	return router
 }
 
-func stopWebDriver(t *testing.T, service *selenium.Service, webDriver selenium.WebDriver) {
+func TestFilterElements(t *testing.T) {
 
-	if webDriver != nil {
-		if err := webDriver.Quit(); err != nil {
-			t.Fatalf("Failed to quit WebDriver: %v", err)
-		}
+	// Start ChromeDriver service
+	// Start ChromeDriver service with verbose logging
+	service, err := selenium.NewChromeDriverService("C:/Users/abyla/OneDrive/Рабочий стол/chromedriver.exe", 4444, selenium.Output(os.Stderr))
+
+	if err != nil {
+		log.Fatal("Error:", err)
+	}
+	defer service.Stop()
+
+	caps := selenium.Capabilities{}
+	caps.AddChrome(chrome.Capabilities{Args: []string{
+		"--headless-new", // comment out this line for testing
+	}})
+
+	// create a new remote client with the specified options
+	driver, err := selenium.NewRemote(caps, "")
+
+	if err != nil {
+		log.Fatal("Error:", err)
+	}
+	log.Println("WebDriver started successfully")
+	// maximize the current window to avoid responsive rendering
+	err = driver.MaximizeWindow("")
+	if err != nil {
+		log.Fatal("Error:", err)
 	}
 
-	if service != nil {
-		if err := service.Stop(); err != nil {
-			t.Fatalf("Failed to stop WebDriver service: %v", err)
-		}
+	time.Sleep(15 * time.Second) // Adjust the sleep duration as needed
+	err = driver.Get("https://minima-laptop-store-2bs3.onrender.com/productsTest")
+	if err != nil {
+		log.Fatal("Error navigating to the webpage:", err)
+	} else {
+		log.Println("Successfully navigated to the webpage")
 	}
+
+	// Locate the price range and sort filter elements
+	minPriceRange := findElement(t, driver, selenium.ByID, "minPriceRange")
+	maxPriceRange := findElement(t, driver, selenium.ByID, "maxPriceRange")
+	sortFilter := findElement(t, driver, selenium.ByID, "sortFilter")
+	applyFiltersButton := findElement(t, driver, selenium.ByID, "applyFilters")
+
+	// Perform interactions
+	err = minPriceRange.SendKeys("1000")
+	if err != nil {
+		log.Fatal("Error setting minPriceRange:", err)
+	}
+
+	err = maxPriceRange.SendKeys("5000")
+	if err != nil {
+		log.Fatal("Error setting maxPriceRange:", err)
+	}
+
+	err = sortFilter.SendKeys("desc") // Select descending order
+	if err != nil {
+		log.Fatal("Error setting sortFilter:", err)
+	}
+
+	// Click the Apply Filters button
+	err = applyFiltersButton.Click()
+	if err != nil {
+		log.Fatal("Error clicking applyFiltersButton:", err)
+	}
+
+	// Wait for results to load (add explicit wait if needed)
+
+	// Assertions to verify the results
+	// For example, check if the displayed products match the applied filters
+	// ...
+
+	// Cleanup if needed
 }
 
-func TestWebPageInteractions(t *testing.T) {
-	service, webDriver := startWebDriver(t)
-	defer stopWebDriver(t, service, webDriver)
-
-	if err := webDriver.Get("http://localhost:10000/products"); err != nil {
-		t.Fatalf("Failed to navigate to the web page: %v", err)
-	}
-
-	// Example interaction: Find an element by CSS selector and check its text content
-	element, err := webDriver.FindElement(selenium.ByCSSSelector, ".nav-link")
+func findElement(t *testing.T, wd selenium.WebDriver, by, value string) selenium.WebElement {
+	// Find the element by specified criteria
+	element, err := wd.FindElement(by, value)
 	if err != nil {
-		t.Fatalf("Failed to find the element: %v", err)
+		t.Fatalf("Failed to find element by %s: %v", by, err)
 	}
-
-	// Get the text content of the element
-	text, err := element.Text()
-	if err != nil {
-		t.Fatalf("Failed to get text content: %v", err)
-	}
-
-	// Verify that the text content is as expected
-	expectedText := "Your Expected Text"
-	if text != expectedText {
-		t.Fatalf("Unexpected text content. Got %s, expected %s", text, expectedText)
-	}
-
-	// Add more interactions as needed
-
-	// Wait for a few seconds to observe the changes
-	time.Sleep(5 * time.Second)
+	return element
 }
