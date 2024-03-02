@@ -11,7 +11,6 @@
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark p-3">
         <div class="container-fluid">
-<<<<<<< HEAD
             <a class="navbar-brand" href="/">minima.</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown"
                 aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
@@ -35,34 +34,6 @@
             </div>
         </div>
     </nav>
-=======
-          <a class="navbar-brand" href="/home">minima.</a>
-          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown"
-            aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-          </button>
-    
-          <div class=" collapse navbar-collapse" id="navbarNavDropdown">
-            <ul class="navbar-nav ml-auto ">
-              <li class="nav-item">
-                  <a class="nav-link mx-2 active" aria-current="page" href="/products">Products</a>
-              </li>
-              <li class="nav-item">
-                  <a class="nav-link mx-2" href="#">Support</a>
-              </li>
-              <li class="nav-item">
-                  <a class="nav-link mx-2" href="/basket">Cart</a>
-              </li>
-              <li class="nav-item dropdown">
-                  <a class="nav-link mx-2" href="/account" id="navbarDropdownMenuLink">Profile
-                  </a>
-    
-              </li>
-          </ul>
-          </div>
-        </div>
-        </nav>
->>>>>>> dcd9cee5d7b857f44ef079d7286631b21e1403f1
     <div class="container mt-5">
         <div class="row">
             <div class="col-md-6 offset-md-3">
@@ -75,13 +46,13 @@
                             <p id="id" style="display: none;">{{.ID}}</p>
                             <div class="form-group">
                                 <label for="username">Username</label>
-                                <input type="text" class="form-control" id="username" name="username" placeholder="Enter username"
-                                    value="{{.Username}}" readonly>
+                                <input type="text" class="form-control" id="username" name="username"
+                                    placeholder="Enter username" value="{{.Username}}" readonly>
                             </div>
                             <div class="form-group">
                                 <label for="email">Email</label>
-                                <input type="email" class="form-control" id="email" name="email" placeholder="Enter email"
-                                    value="{{.Email}}" readonly>
+                                <input type="email" class="form-control" id="email" name="email"
+                                    placeholder="Enter email" value="{{.Email}}" readonly>
                             </div>
                             <button type="button" class="btn btn-warning w-100 mt-3"
                                 onclick="enableEdit()">Edit</button>
@@ -128,7 +99,7 @@
             })
             // window.location.href = "/account"
         }
-        
+
     </script>
     <script>
         function logout() {
@@ -139,15 +110,15 @@
                 },
                 body: JSON.stringify({})
             })
-            .then(response => {
-                if (response.ok) {
-                    // Перенаправление на страницу входа или другую страницу после выхода из аккаунта
-                    window.location.href = '/logins';
-                } else {
-                    console.error('Failed to logout:', response.statusText);
-                }
-            })
-            .catch(error => console.error('Error during logout:', error));
+                .then(response => {
+                    if (response.ok) {
+                        // Перенаправление на страницу входа или другую страницу после выхода из аккаунта
+                        window.location.href = '/logins';
+                    } else {
+                        console.error('Failed to logout:', response.statusText);
+                    }
+                })
+                .catch(error => console.error('Error during logout:', error));
         }
     </script>
 </body>

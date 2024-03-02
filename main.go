@@ -1087,8 +1087,8 @@ func accountHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		}
 		user, err := db.FindUserByToken(client, token)
-		if user.Role == "ADMIN"{
-			handleAdmin(w,r)
+		if user.Role == "ADMIN" {
+			handleAdmin(w, r)
 			return
 		}
 		// Execute the template with the list of ViewData items
