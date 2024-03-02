@@ -10,21 +10,50 @@
 </head>
 
 <body>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark p-3">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="/home">minima.</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown"
+        aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class=" collapse navbar-collapse" id="navbarNavDropdown">
+        <ul class="navbar-nav ml-auto ">
+          <li class="nav-item">
+              <a class="nav-link mx-2 active" aria-current="page" href="/products">Products</a>
+          </li>
+          <li class="nav-item">
+              <a class="nav-link mx-2" href="#">Support</a>
+          </li>
+          <li class="nav-item">
+              <a class="nav-link mx-2" href="/basket">Cart</a>
+          </li>
+          <li class="nav-item dropdown">
+              <a class="nav-link mx-2" href="/account" id="navbarDropdownMenuLink">Profile
+              </a>
+
+          </li>
+      </ul>
+      </div>
+    </div>
+    </nav>
   <div class="container">
     <h1 class="text-center pt-5">Admin Panel - Product Management</h1>
-    <form action="/admin/submitNewsletter" method="post">
-      <label for="title">Subject:</label>
-      <input type="text" id="subject" name="subject" required>
-  
-      <br>
-  
-      <label for="text">Text:</label>
-      <textarea id="info" name="info" rows="4" required></textarea>
-  
-      <br>
-  
-      <input type="submit" value="Submit">
-    </form>
+      <h2 class="mb-4 mt-5">Submit Newsletter</h2>
+        <form action="/admin/submitNewsletter" method="post">
+            <div class="form-group">
+                <label for="subject">Subject:</label>
+                <input type="text" id="subject" name="subject" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="info">Text:</label>
+                <textarea id="info" name="info" rows="4" class="form-control" required></textarea>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Submit" class="btn btn-primary btn-block">
+            </div>
+        </form>
     <!-- Form for adding a new product -->
     <form class="mt-5 mb-5" id="addForm">
       <h2>Add New Product</h2>
