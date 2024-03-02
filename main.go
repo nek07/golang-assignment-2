@@ -117,7 +117,7 @@ func handleRoutes() {
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("public"))))
 
 	r.HandleFunc("/", homeHandler)
-	r.HandleFunc("/home", homeHandler) //correct header
+	r.HandleFunc("/", homeHandler) //correct header
 	r.HandleFunc("/registration/verify", confirmVerificationCodeHandler)
 	r.HandleFunc("/registration/verification", verificationPageHandler)
 	r.HandleFunc("/registration", registrationPageHandler)
@@ -166,7 +166,7 @@ func main() {
 
 }
 func homeHandler(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/home" {
+	if r.URL.Path != "/" {
 		error404PageHandler(w, r)
 		return
 	}
@@ -771,7 +771,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Return a success response
 	fmt.Print("Login success")
-	http.Redirect(w, r, "/home", http.StatusSeeOther)
+	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
 func generateVerificationCode() string {
