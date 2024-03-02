@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+</head>
+
+<body>
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-md-6 offset-md-3">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h3 class="text-center">User Profile</h3>
+                    </div>
+                    <div class="card-body">
+                        <form id="accForm">
+                            <p id="id" style="display: none;">{{.ID}}</p>
+                            <div class="form-group">
+                                <label for="username">Username</label>
+                                <input type="text" class="form-control" id="username" name="username" placeholder="Enter username"
+                                    value="{{.Username}}" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label for="email">Email</label>
+                                <input type="email" class="form-control" id="email" name="email" placeholder="Enter email"
+                                    value="{{.Email}}" readonly>
+                            </div>
+                            <button type="button" class="btn btn-warning w-100 mt-3"
+                                onclick="enableEdit()">Edit</button>
+                            <button type="button" class="btn btn-danger w-100 mt-2" onclick="logout()">Logout</button>
+                            <button type="button" class="btn btn-success w-100 mt-2" style="display: none;" id="saveBtn"
+                                onclick="saveChanges()">Save</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function enableEdit() {
+            document.getElementById('username').readOnly = false;
+            document.getElementById('email').readOnly = false;
+            document.getElementById('saveBtn').style.display = 'block';
+        }
+
+        function saveChanges() {
+            const username = document.getElementById('username').value;
+            const email = document.getElementById('email').value;
+            // Отправка данных на сервер для сохранения
+            // Здесь можно использовать AJAX запрос или другие методы
+            console.log("Username:", username);
+            console.log("Email:", email);
+            // После сохранения можно снова сделать поля только для чтения и скрыть кнопку сохранения
+            document.getElementById('username').readOnly = true;
+            document.getElementById('email').readOnly = true;
+            document.getElementById('saveBtn').style.display = 'none';
+            const formData = new FormData(document.getElementById('accForm'));
+            fetch("/account/" + email + "/edit", {
+                method: "PUT",
+                mode: "cors",
+                cache: "no-cache",
+                credentials: "same-origin",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
+                redirect: "follow",
+                referrerPolicy: "no-referrer",
+                body: new URLSearchParams(formData).toString(),
+            })
+            // window.location.href = "/account"
+        }
+        
+    </script>
+    <script>
+        function logout() {
+            fetch('account/logout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({})
+            })
+            .then(response => {
+                if (response.ok) {
+                    // Перенаправление на страницу входа или другую страницу после выхода из аккаунта
+                    window.location.href = '/logins';
+                } else {
+                    console.error('Failed to logout:', response.statusText);
+                }
+            })
+            .catch(error => console.error('Error during logout:', error));
+        }
+    </script>
+</body>
+
+</html>

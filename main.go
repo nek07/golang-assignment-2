@@ -115,8 +115,9 @@ func connectDB() {
 func handleRoutes() {
 	r := mux.NewRouter()
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("public"))))
-	// Регистрация обработчиков для маршрутов
-	r.HandleFunc("/home", homeHandler)
+
+	r.HandleFunc("/", homeHandler)
+	r.HandleFunc("/home", homeHandler) //correct header
 	r.HandleFunc("/registration/verify", confirmVerificationCodeHandler)
 	r.HandleFunc("/registration/verification", verificationPageHandler)
 	r.HandleFunc("/registration", registrationPageHandler)
@@ -131,9 +132,9 @@ func handleRoutes() {
 	r.HandleFunc("/deleteUser", verifyToken(rateLimitedHandler(handleDeleteUser)))
 	r.HandleFunc("/getAllUsers", verifyToken(rateLimitedHandler(handleGetAllUsers)))
 	r.HandleFunc("/admin", verifyToken(rateLimitedHandler(handleAdmin)))
-	r.HandleFunc("/products", productsPageHandler)
-	r.HandleFunc("/product/{id}", handleConcreteProduct)
-	r.HandleFunc("/product/{id}/add-comment", rateLimitedHandler(addCommentHandler))
+	r.HandleFunc("/products", verifyToken(productsPageHandler))
+	r.HandleFunc("/product/{id}", verifyToken(handleConcreteProduct))
+	r.HandleFunc("/product/{id}/add-comment", verifyToken(rateLimitedHandler(addCommentHandler)))
 	r.HandleFunc("/product/{id}/get-comments", verifyToken(rateLimitedHandler(getCommentHandler)))
 	r.HandleFunc("/admin/delete/{id}", verifyToken(rateLimitedHandler(handleDeleteProduct)))
 	r.HandleFunc("/admin/edit/{id}", verifyToken(rateLimitedHandler(handleEditProduct)))
@@ -142,6 +143,9 @@ func handleRoutes() {
 	r.HandleFunc("/product/{id}/addToBasket", verifyToken(rateLimitedHandler(addToCartHandler)))
 	r.HandleFunc("/view-cart", verifyToken(rateLimitedHandler(viewCartHandler)))
 	r.HandleFunc("/remove-from-cart/{id}", verifyToken(rateLimitedHandler(removeFromCartHandler)))
+	r.HandleFunc("/account", verifyToken(rateLimitedHandler(accountHandler)))
+	r.HandleFunc("/account/{id}/edit", verifyToken(rateLimitedHandler(editAccountHandler)))
+	r.HandleFunc("/account/logout", verifyToken(rateLimitedHandler(logoutHandler)))
 
 	port := 10000
 	fmt.Printf("Server is running on http://localhost:%d\n", port)
@@ -168,7 +172,14 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if r.Method == http.MethodGet {
-		http.ServeFile(w, r, "public/index.html")
+		tmpl, err := template.ParseFiles("public/index.html")
+		if err != nil {
+			fmt.Println("Error parsing HTML template:", err)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		}
+
+		// Execute the template with the list of ViewData items
+		tmpl.Execute(w, verifyUser(r))
 	} else {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
@@ -1014,4 +1025,79 @@ func getCommentHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write(jsonResponse)
+}
+
+func verifyUser(r *http.Request) bool {
+	cookie, err := r.Cookie("token")
+	if err != nil {
+		return false
+	}
+	token := cookie.Value
+	user, err := db.FindUserByToken(client, token)
+	if err != nil {
+		return false
+	}
+	if user == nil {
+		return false
+	}
+	return true
+}
+
+func accountHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodGet {
+		cookie, err := r.Cookie("token")
+		if err != nil {
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+		token := cookie.Value
+		tmpl, err := template.ParseFiles("public/profile.html")
+		if err != nil {
+			fmt.Println("Error parsing HTML template:", err)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		}
+		user, err := db.FindUserByToken(client, token)
+		// Execute the template with the list of ViewData items
+		tmpl.Execute(w, user)
+	}
+}
+func editAccountHandler(w http.ResponseWriter, r *http.Request) {
+	// Получаем идентификатор аккаунта из URL
+	vars := mux.Vars(r)
+	id := vars["id"]
+	// Получаем данные из тела запроса
+	err := r.ParseForm()
+	if err != nil {
+		http.Error(w, "Failed to parse form data", http.StatusBadRequest)
+		return
+	}
+
+	// Извлекаем данные из формы
+	username := r.Form.Get("username")
+	email := r.Form.Get("email")
+
+	err = db.UpdateAccount(id, username, email)
+	if err != nil {
+		http.Error(w, "Failed to update account", http.StatusInternalServerError)
+		return
+	}
+
+	// Возвращаем успешный ответ
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Account updated successfully"))
+	fmt.Println(id + "   id")
+}
+func logoutHandler(w http.ResponseWriter, r *http.Request) {
+	// Удаляем токен из cookie путем установки пустого значения и истечения срока действия
+	http.SetCookie(w, &http.Cookie{
+		Name:     "token",
+		Value:    "",
+		Path:     "/",
+		MaxAge:   -1,
+		HttpOnly: true, // Важно для безопасности, чтобы JavaScript не мог получить доступ к токену
+	})
+
+	// Отправляем успешный ответ
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Logged out successfully"))
 }
