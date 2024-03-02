@@ -14,7 +14,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-const uri = "mongodb://localhost:27017/"
+const uri = "mongodb+srv://damir:CNW6CNosCC9VFPoG@cluster0.qazvzjk.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
 
 var log = logrus.New()
 
@@ -267,7 +267,7 @@ func FindProductsWithFilters(brands []string, minPrice int, maxPrice int, sortBy
 	skip := (page - 1) * limit
 
 	// Set up MongoDB client
-	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://localhost:27017"))
+	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb+srv://damir:CNW6CNosCC9VFPoG@cluster0.qazvzjk.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"))
 	if err != nil {
 		return nil, 0, fmt.Errorf("Error creating MongoDB client: %v", err)
 	}
@@ -343,7 +343,7 @@ func FindProductsWithFilters(brands []string, minPrice int, maxPrice int, sortBy
 
 func FindProductById(id string) (products Laptop, err error) {
 	ctx := context.TODO()
-	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://localhost:27017"))
+	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb+srv://damir:CNW6CNosCC9VFPoG@cluster0.qazvzjk.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"))
 	if err != nil {
 		return Laptop{}, fmt.Errorf("Error creating MongoDB client: %v", err)
 	}
@@ -370,7 +370,7 @@ func FindProductById(id string) (products Laptop, err error) {
 }
 func DeleteProduct(id string) error {
 	ctx := context.TODO()
-	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://localhost:27017"))
+	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb+srv://damir:CNW6CNosCC9VFPoG@cluster0.qazvzjk.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"))
 	if err != nil {
 		return fmt.Errorf("Error creating MongoDB client: %v", err)
 	}
@@ -390,7 +390,7 @@ func DeleteProduct(id string) error {
 }
 func UpdateProductInDB(id string, brand string, model string, description string, price int) error {
 	ctx := context.TODO()
-	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://localhost:27017"))
+	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb+srv://damir:CNW6CNosCC9VFPoG@cluster0.qazvzjk.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"))
 	if err != nil {
 		return fmt.Errorf("Error creating MongoDB client: %v", err)
 	}
@@ -427,7 +427,7 @@ func UpdateProductInDB(id string, brand string, model string, description string
 }
 func AddProduct(brand string, model string, description string, price int) error {
 	ctx := context.TODO()
-	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://localhost:27017"))
+	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb+srv://damir:CNW6CNosCC9VFPoG@cluster0.qazvzjk.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"))
 	if err != nil {
 		return fmt.Errorf("Error creating MongoDB client: %v", err)
 	}
@@ -455,7 +455,7 @@ func AddProduct(brand string, model string, description string, price int) error
 }
 func AddComment(username, text, laptopID string) error {
 	// Установка соединения с MongoDB
-	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://localhost:27017"))
+	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb+srv://damir:CNW6CNosCC9VFPoG@cluster0.qazvzjk.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"))
 	if err != nil {
 		return err
 	}
@@ -487,7 +487,7 @@ func AddComment(username, text, laptopID string) error {
 }
 func GetCommentsByLaptop(laptopID string) ([]Comment, error) {
 	// Установка соединения с MongoDB
-	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://localhost:27017"))
+	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb+srv://damir:CNW6CNosCC9VFPoG@cluster0.qazvzjk.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"))
 	if err != nil {
 		return nil, err
 	}

@@ -327,3 +327,7 @@
 {"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-03-02T07:01:19+06:00","timestamp":"2024-03-02T07:01:19+06:00"}
 {"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-03-02T07:02:50+06:00","timestamp":"2024-03-02T07:02:50+06:00"}
 {"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-03-02T07:04:28+06:00","timestamp":"2024-03-02T07:04:28+06:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-03-02T07:06:02+06:00","timestamp":"2024-03-02T07:06:02+06:00"}
+{"action":"filter_products","brands":[""],"level":"info","maxPrice":999999999,"minPrice":0,"msg":"User filtered products","page":1,"sortBy":"","time":"2024-03-02T07:06:19+06:00","timestamp":"2024-03-02T07:06:19+06:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-03-02T07:23:20+06:00","timestamp":"2024-03-02T07:23:20+06:00"}
+{"action":"filter_products","brands":[""],"level":"info","maxPrice":999999999,"minPrice":0,"msg":"User filtered products","page":1,"sortBy":"","time":"2024-03-02T07:23:32+06:00","timestamp":"2024-03-02T07:23:32+06:00"}

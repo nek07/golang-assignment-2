@@ -43,7 +43,7 @@ type Data struct {
 	Laptops       []db.Laptop
 }
 
-const uri = "mongodb://localhost:27017/"
+const uri = "mongodb+srv://damir:CNW6CNosCC9VFPoG@cluster0.qazvzjk.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
 
 var client *mongo.Client
 
