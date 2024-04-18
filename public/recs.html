@@ -1,0 +1,99 @@
+<!DOCTYPE html> 
+<html lang="en"> 
+ 
+<head> 
+    <meta charset="UTF-8"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <title>Comment Form</title> 
+    <!-- Bootstrap CSS --> 
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet"> 
+    <style> 
+        /* Additional custom styles */ 
+        .comment-input-group { 
+            margin-bottom: 10px; 
+            position: relative; 
+            padding-left: 30px; /* Adjust this value as needed */ 
+        } 
+        .comment-numeration { 
+            position: absolute; 
+            left: 0; 
+            top: 50%; 
+            transform: translateY(-50%); 
+            font-size: 24px; /* Adjust font size as needed */ 
+            color: #6c757d; /* Adjust color as needed */ 
+            text-decoration: underline; 
+        } 
+        #button-box { 
+            display: flex; 
+             
+            gap: 20px; 
+        } 
+        .submit-button { 
+            width: 150px; 
+            text-align: center; 
+        } 
+        #addComment { 
+            order: -1; /* Move "+" button to the left */ 
+        } 
+    </style> 
+</head> 
+ 
+<body> 
+    <div class="container mt-5"> 
+        <form id="commentForm"> 
+            <div id="commentInputs"> 
+                <h3 for="comment" style="margin-bottom:30px">Recommendations</h3> 
+                <div class="form-group comment-input-group"> 
+                    <span class="comment-numeration">1</span> 
+                    <input type="text" class="form-control" id="comment" name="comment[]" placeholder="Write here..." 
+                        required> 
+                </div> 
+            </div> 
+            <div id="button-box"> 
+                <button type="button" class="btn btn-info" id="addComment">➕</button> 
+                <button type="submit" class="btn btn-success submit-button">Submit</button> 
+            </div> 
+        </form> 
+    </div> 
+ 
+    <!-- Bootstrap JS (optional) --> 
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script> 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script> 
+    <script> 
+        $(document).ready(function () { 
+            $('#addComment').click(function () { 
+                // Clone the last comment input group and append it to the commentInputs div 
+                var newCommentInputGroup = $('#commentInputs .comment-input-group').last().clone(); 
+                var newCommentNumeration = $('#commentInputs .comment-numeration').length + 1; 
+                newCommentInputGroup.find('.comment-numeration').text(newCommentNumeration); 
+                $('#commentInputs').append(newCommentInputGroup); 
+                // Clear the input value in the cloned input field 
+                newCommentInputGroup.find('input').val(''); 
+            }); 
+ 
+            $('#commentForm').submit(function (event) { 
+                event.preventDefault(); 
+                // Serialize the form data 
+                var formData = $(this).serialize(); 
+                // Submit the form data (you can handle this using AJAX) 
+                console.log(formData); 
+                // Example: AJAX submission 
+                // $.ajax({ 
+                //   url: 'submit.php', 
+                //   method: 'POST', 
+                //   data: formData, 
+                //   success: function(response) { 
+                //     console.log(response); 
+                //     // Handle success response 
+                //   }, 
+                //   error: function(xhr, status, error) { 
+                //     console.error(xhr.responseText); 
+                //     // Handle error response 
+                //   } 
+                // }); 
+            }); 
+        }); 
+    </script> 
+</body> 
+ 
+</html>
