@@ -36,7 +36,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 	"github.com/sirupsen/logrus/hooks/writer"
-
 	// "sync"
 )
 
@@ -127,6 +126,7 @@ func handleRoutes() {
 	r.HandleFunc("/login", loginHandler)
 	r.HandleFunc("/register", registerHandler)
 	r.HandleFunc("/recs", recHandler)
+	r.HandleFunc("/recs/submit", submitRecsHandler)
 	r.HandleFunc("/admin/submitNewsletter", newsletterHandler)
 	r.HandleFunc("/error", rateLimitedHandler(errorPageHandler))
 	r.HandleFunc("/crud", verifyToken(rateLimitedHandler(crudHandler)))
@@ -151,7 +151,6 @@ func handleRoutes() {
 	r.HandleFunc("/account", verifyToken(rateLimitedHandler(accountHandler)))
 	r.HandleFunc("/account/{id}/edit", verifyToken(rateLimitedHandler(editAccountHandler)))
 	r.HandleFunc("/account/logout", verifyToken(rateLimitedHandler(logoutHandler)))
-	r.HandleFunc("/recommendations/submit", handleRecomdationSubmit)
 
 	port := 10000
 	fmt.Printf("Server is running on http://localhost:%d\n", port)
@@ -202,18 +201,7 @@ func registrationPageHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
 }
-func recHandler(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/recs" {
-		error404PageHandler(w, r)
-		return
-	}
 
-	if r.Method == http.MethodGet {
-		http.ServeFile(w, r, "public/recs.html")
-	} else {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-	}
-}
 func loginPageHandler(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/logins" {
 		error404PageHandler(w, r)
@@ -1154,40 +1142,63 @@ func logoutHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Logged out successfully"))
 }
 
-func handleRecomdationSubmit(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodGet { // поменять на пост
+
+func recomInsert(recoms <-chan string, done chan<- bool) { //results chan<- int
+	for recom := range recoms {
+		fmt.Println(recom)
+		err := db.InsertRecom(recom)
+		if err != nil {
+			fmt.Println("Error with insert recom")
+		}
+		done <- true
+	}
+}
+
+func recHandler(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/recs" {
+		error404PageHandler(w, r)
+		return
+	}
+
+	if r.Method == http.MethodGet {
+		http.ServeFile(w, r, "public/recs.html")
+	} else {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	}
+}
+func submitRecsHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodPost {
+		goroutines := 100;
+
+		if err := r.ParseForm(); err != nil {
+			http.Error(w, "Failed to parse form data", http.StatusInternalServerError)
+			return
+		}
+		comments := r.Form["comment[]"]
+		
 		fmt.Println("Start ------ Start")
 		done := make(chan bool)
-		recoms := make(chan int, 1000)
+		recoms := make(chan string)
 
 		start := time.Now()
 		// var wg sync.WaitGroup
 		// wg.Add(recoms)
-		for w := 1; w <= 100; w++ {
+
+
+		for w := 1; w <= goroutines; w++ {
 			go recomInsert(recoms, done)
 		}
-		for j := 1; j <= 100; j++ {
-			recoms <- j
+		for _, comment := range comments {
+			recoms <- comment
 		}
 		close(recoms)
-		for a := 1; a <= 100; a++ {
+		for range comments{
 			<-done
 		}
 		elapsed := time.Since(start)
 		fmt.Printf("/////////////////////////////////\nExecution time: %s\n", elapsed)
 		fmt.Println("Recoms inserted")
 	} else {
-		error404PageHandler(w, r)
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
-	
-}
-
-func recomInsert(recoms <-chan int, done chan<- bool) {  //results chan<- int
-    for range recoms {
-        err := db.InsertRecom("Damir");
-		if(err != nil){
-			fmt.Println("Error with insert recom")
-		}
-		done <- true
-    }
 }

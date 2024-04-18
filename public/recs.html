@@ -25,7 +25,6 @@
         } 
         #button-box { 
             display: flex; 
-             
             gap: 20px; 
         } 
         .submit-button { 
@@ -75,22 +74,17 @@
                 event.preventDefault(); 
                 // Serialize the form data 
                 var formData = $(this).serialize(); 
-                // Submit the form data (you can handle this using AJAX) 
-                console.log(formData); 
-                // Example: AJAX submission 
-                // $.ajax({ 
-                //   url: 'submit.php', 
-                //   method: 'POST', 
-                //   data: formData, 
-                //   success: function(response) { 
-                //     console.log(response); 
-                //     // Handle success response 
-                //   }, 
-                //   error: function(xhr, status, error) { 
-                //     console.error(xhr.responseText); 
-                //     // Handle error response 
-                //   } 
-                // }); 
+                $.ajax({ 
+                    url: '/recs/submit', 
+                    method: 'POST', 
+                    data: formData, 
+                    success: function(response) { 
+                        console.log(response); // Output the response from the server 
+                    }, 
+                    error: function(xhr, status, error) { 
+                        console.error(xhr.responseText); // Output any error messages 
+                    } 
+                }); 
             }); 
         }); 
     </script> 

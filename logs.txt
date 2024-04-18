@@ -527,3 +527,22 @@
 {"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-04-19T00:12:10+05:00","timestamp":"2024-04-19T00:12:10+05:00"}
 {"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-04-19T00:13:23+05:00","timestamp":"2024-04-19T00:13:23+05:00"}
 {"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-04-19T00:14:14+05:00","timestamp":"2024-04-19T00:14:14+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-04-19T00:27:18+05:00","timestamp":"2024-04-19T00:27:18+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-04-19T00:36:40+05:00","timestamp":"2024-04-19T00:36:40+05:00"}
+{"error":"listen tcp :10000: bind: Only one usage of each socket address (protocol/network address/port) is normally permitted.","level":"error","msg":"Error starting server","time":"2024-04-19T00:36:42+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-04-19T00:37:10+05:00","timestamp":"2024-04-19T00:37:10+05:00"}
+{"error":"listen tcp :10000: bind: Only one usage of each socket address (protocol/network address/port) is normally permitted.","level":"error","msg":"Error starting server","time":"2024-04-19T00:37:11+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-04-19T00:37:18+05:00","timestamp":"2024-04-19T00:37:18+05:00"}
+{"error":"listen tcp :10000: bind: Only one usage of each socket address (protocol/network address/port) is normally permitted.","level":"error","msg":"Error starting server","time":"2024-04-19T00:37:19+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-04-19T00:37:33+05:00","timestamp":"2024-04-19T00:37:33+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-04-19T00:39:22+05:00","timestamp":"2024-04-19T00:39:22+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-04-19T00:50:02+05:00","timestamp":"2024-04-19T00:50:02+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-04-19T00:51:57+05:00","timestamp":"2024-04-19T00:51:57+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-04-19T00:52:58+05:00","timestamp":"2024-04-19T00:52:58+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-04-19T00:53:43+05:00","timestamp":"2024-04-19T00:53:43+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-04-19T00:55:07+05:00","timestamp":"2024-04-19T00:55:07+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-04-19T01:00:39+05:00","timestamp":"2024-04-19T01:00:39+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-04-19T01:02:56+05:00","timestamp":"2024-04-19T01:02:55+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-04-19T01:09:32+05:00","timestamp":"2024-04-19T01:09:32+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-04-19T01:12:06+05:00","timestamp":"2024-04-19T01:12:06+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-04-19T01:16:35+05:00","timestamp":"2024-04-19T01:16:35+05:00"}
