@@ -124,6 +124,7 @@ func handleRoutes() {
 	r.HandleFunc("/logins", loginPageHandler)
 	r.HandleFunc("/login", loginHandler)
 	r.HandleFunc("/register", registerHandler)
+	r.HandleFunc("/recs", recHandler)
 	r.HandleFunc("/admin/submitNewsletter", newsletterHandler)
 	r.HandleFunc("/error", rateLimitedHandler(errorPageHandler))
 	r.HandleFunc("/crud", verifyToken(rateLimitedHandler(crudHandler)))
@@ -194,6 +195,18 @@ func registrationPageHandler(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method == http.MethodGet {
 		http.ServeFile(w, r, "public/registration.html")
+	} else {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	}
+}
+func recHandler(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/recs" {
+		error404PageHandler(w, r)
+		return
+	}
+
+	if r.Method == http.MethodGet {
+		http.ServeFile(w, r, "public/recs.html")
 	} else {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
