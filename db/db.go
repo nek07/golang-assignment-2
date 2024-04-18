@@ -49,6 +49,10 @@ type Comment struct {
 	Text     string `bson:"text"`
 	Time     string `bson:"time"`
 }
+type Recom struct {
+	ID       string `bson:"_id,omitempty"`
+	Text	 string `bson:"text"`
+}
 
 func InsertData(client *mongo.Client, u User) error {
 	collection := client.Database("go-assignment-2").Collection("users")
@@ -590,6 +594,31 @@ func UpdateAccount(id string, username string, email string) error {
 	_, err = collection.UpdateOne(ctx, filter, update)
 	if err != nil {
 		return fmt.Errorf("Error updating account: %v", err)
+	}
+
+	return nil
+}
+
+func InsertRecom(text string) error {
+	client, err := mongo.NewClient(options.Client().ApplyURI(uri))
+	if err != nil {
+		return err
+	}
+	ctx := context.TODO()
+	err = client.Connect(ctx)
+	if err != nil {
+		return err
+	}
+	defer client.Disconnect(ctx)
+	collection := client.Database("go-assignment-2").Collection("recommendations")
+
+	newComment := Recom{
+		Text:     text,
+	}
+
+	_, err = collection.InsertOne(ctx, newComment)
+	if err != nil {
+		return err
 	}
 
 	return nil

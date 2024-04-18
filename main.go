@@ -36,6 +36,8 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 	"github.com/sirupsen/logrus/hooks/writer"
+
+	// "sync"
 )
 
 type Data struct {
@@ -148,6 +150,7 @@ func handleRoutes() {
 	r.HandleFunc("/account", verifyToken(rateLimitedHandler(accountHandler)))
 	r.HandleFunc("/account/{id}/edit", verifyToken(rateLimitedHandler(editAccountHandler)))
 	r.HandleFunc("/account/logout", verifyToken(rateLimitedHandler(logoutHandler)))
+	r.HandleFunc("/recommendations/submit", handleRecomdationSubmit)
 
 	port := 10000
 	fmt.Printf("Server is running on http://localhost:%d\n", port)
@@ -1136,4 +1139,42 @@ func logoutHandler(w http.ResponseWriter, r *http.Request) {
 	// Отправляем успешный ответ
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Logged out successfully"))
+}
+
+func handleRecomdationSubmit(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodGet { // поменять на пост
+		fmt.Println("Start ------ Start")
+		done := make(chan bool)
+		recoms := make(chan int, 1000)
+
+		start := time.Now()
+		// var wg sync.WaitGroup
+		// wg.Add(recoms)
+		for w := 1; w <= 100; w++ {
+			go recomInsert(recoms, done)
+		}
+		for j := 1; j <= 100; j++ {
+			recoms <- j
+		}
+		close(recoms)
+		for a := 1; a <= 100; a++ {
+			<-done
+		}
+		elapsed := time.Since(start)
+		fmt.Printf("/////////////////////////////////\nExecution time: %s\n", elapsed)
+		fmt.Println("Recoms inserted")
+	} else {
+		error404PageHandler(w, r)
+	}
+	
+}
+
+func recomInsert(recoms <-chan int, done chan<- bool) {  //results chan<- int
+    for range recoms {
+        err := db.InsertRecom("Damir");
+		if(err != nil){
+			fmt.Println("Error with insert recom")
+		}
+		done <- true
+    }
 }
