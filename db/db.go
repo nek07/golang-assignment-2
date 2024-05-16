@@ -3,6 +3,8 @@ package db
 import (
 	"context"
 	"fmt"
+	"io"
+	"os"
 	"time"
 
 	"regexp"
@@ -16,13 +18,50 @@ import (
 
 const uri = "mongodb+srv://damir:CNW6CNosCC9VFPoG@cluster0.qazvzjk.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
 
+var Client *mongo.Client
 var log = logrus.New()
 
 func init() {
 	log.SetFormatter(&logrus.JSONFormatter{})
 }
 
-var client *mongo.Client
+func ConnectDB() {
+	uri := uri
+	file, _ := os.OpenFile("logs.txt", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+
+	mw := io.MultiWriter(os.Stdout, file)
+	log.SetOutput(mw)
+
+	// Create client options
+	clientOptions := options.Client().ApplyURI(uri)
+
+	var err error
+	Client, err = mongo.NewClient(clientOptions)
+	if err != nil {
+		log.Fatal("Error creating MongoDB client:", err)
+	}
+	log.WithFields(logrus.Fields{
+		"action":    "server_access",
+		"timestamp": time.Now().Format(time.RFC3339),
+	}).Info("Client accessed the server")
+	// Create context
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	// Connect to MongoDB
+	err = Client.Connect(ctx)
+	if err != nil {
+		log.WithError(err).Fatal("Error connecting to MongoDB")
+	}
+
+	// Check the connection
+	err = Client.Ping(ctx, nil)
+	if err != nil {
+		log.WithError(err).Fatal("Error pinging MongoDB")
+	}
+
+	fmt.Println("Connected to MongoDB Atlas!")
+}
 
 type User struct {
 	ID          primitive.ObjectID `bson:"_id,omitempty" json:"id"`
@@ -50,11 +89,28 @@ type Comment struct {
 	Time     string `bson:"time"`
 }
 type Recom struct {
-	ID       string `bson:"_id,omitempty"`
-	Text	 string `bson:"text"`
+	ID   string `bson:"_id,omitempty"`
+	Text string `bson:"text"`
+}
+type ChatMessage struct {
+	ChatID    string    `bson:"chat_id"`
+	Sender    string    `bson:"sender"`
+	Message   string    `bson:"message"`
+	Timestamp time.Time `bson:"timestamp"`
 }
 
+func InsertMessage(cm ChatMessage) error {
+
+	ctx := context.TODO()
+	collection := Client.Database("go-assignment-2").Collection("Chats")
+	_, err := collection.InsertOne(ctx, cm)
+	if err != nil {
+		log.Println("Error storing message:", err)
+	}
+	return err
+}
 func InsertData(client *mongo.Client, u User) error {
+
 	collection := client.Database("go-assignment-2").Collection("users")
 
 	// Insert user data into the MongoDB collection
@@ -613,7 +669,7 @@ func InsertRecom(text string) error {
 	collection := client.Database("go-assignment-2").Collection("recommendations")
 
 	newComment := Recom{
-		Text:     text,
+		Text: text,
 	}
 
 	_, err = collection.InsertOne(ctx, newComment)

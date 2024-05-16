@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"io/ioutil"
 	_ "log"
 	"math/rand"
@@ -30,8 +29,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	_ "go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 	"golang.org/x/crypto/bcrypt"
 	"golang.org/x/time/rate"
 
@@ -47,8 +44,6 @@ type Data struct {
 }
 
 const uri = "mongodb+srv://damir:CNW6CNosCC9VFPoG@cluster0.qazvzjk.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
-
-var client *mongo.Client
 
 var log = logrus.New()
 var limiter = rate.NewLimiter(1, 3) // Rate limit of 1 request per second with a burst of 3 requests
@@ -78,43 +73,7 @@ func init() {
 	// Close the log file when the application exits
 	defer logfile.Close()
 }
-func connectDB() {
-	uri := uri
-	file, _ := os.OpenFile("logs.txt", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 
-	mw := io.MultiWriter(os.Stdout, file)
-	log.SetOutput(mw)
-
-	// Create client options
-	clientOptions := options.Client().ApplyURI(uri)
-
-	var err error
-	client, err = mongo.NewClient(clientOptions)
-	if err != nil {
-		log.Fatal("Error creating MongoDB client:", err)
-	}
-	log.WithFields(logrus.Fields{
-		"action":    "server_access",
-		"timestamp": time.Now().Format(time.RFC3339),
-	}).Info("Client accessed the server")
-	// Create context
-
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
-	// Connect to MongoDB
-	err = client.Connect(ctx)
-	if err != nil {
-		log.WithError(err).Fatal("Error connecting to MongoDB")
-	}
-
-	// Check the connection
-	err = client.Ping(ctx, nil)
-	if err != nil {
-		log.WithError(err).Fatal("Error pinging MongoDB")
-	}
-
-	fmt.Println("Connected to MongoDB Atlas!")
-}
 func handleRoutes() {
 	r := mux.NewRouter()
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("public"))))
@@ -155,7 +114,7 @@ func handleRoutes() {
 	r.HandleFunc("/account/logout", verifyToken(rateLimitedHandler(logoutHandler)))
 
 	r.HandleFunc("/support", chatHandler)
-	room := chat.NewRoom()
+	room := chat.NewRoom("maroom")
 	go room.Run()
 	r.HandleFunc("/room", room.HandleRoom)
 	port := 10000
@@ -168,7 +127,7 @@ func handleRoutes() {
 }
 
 func main() {
-	connectDB()
+	db.ConnectDB()
 	handleRoutes()
 
 }
@@ -300,7 +259,7 @@ func productsPageHandler(w http.ResponseWriter, r *http.Request) {
 		maxPrice = 999999999
 	}
 	filter := bson.D{}
-	db1 := client.Database("go-assignment-2")
+	db1 := db.Client.Database("go-assignment-2")
 	collection1 := db1.Collection("products")
 	// query to get all users
 	cursor, err := collection1.Find(context.Background(), filter)
@@ -367,7 +326,7 @@ func handleGetUser(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 	id := r.FormValue("userId")
-	foundUser, err := db.FindUserByID(ctx, client, "go-assignment-2", "users", id)
+	foundUser, err := db.FindUserByID(ctx, db.Client, "go-assignment-2", "users", id)
 	if err != nil {
 		fmt.Println("user not found")
 		return
@@ -389,7 +348,7 @@ func handleUpdateUser(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 	userIDHex := r.FormValue("updateUserId")
 	newUsername := r.FormValue("newUsername")
-	var err error = db.UpdateUserUsernameByID(ctx, client, "go-assignment-2", "users", userIDHex, newUsername)
+	var err error = db.UpdateUserUsernameByID(ctx, db.Client, "go-assignment-2", "users", userIDHex, newUsername)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -401,7 +360,7 @@ func handleDeleteUser(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 	userIDHex := r.FormValue("deleteUserId")
-	var err error = db.DeleteUserByID(ctx, client, "go-assignment-2", "users", userIDHex)
+	var err error = db.DeleteUserByID(ctx, db.Client, "go-assignment-2", "users", userIDHex)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -413,7 +372,7 @@ func handleGetAllUsers(w http.ResponseWriter, r *http.Request) {
 	// Get user ID from the request parameters
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
-	foundUsers, err := db.GetAllUsers(ctx, client, "go-assignment-2", "users")
+	foundUsers, err := db.GetAllUsers(ctx, db.Client, "go-assignment-2", "users")
 	if err != nil {
 		fmt.Println("user not found")
 		return
@@ -600,10 +559,10 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	// user, _ := db.FindUserByEmail(client, r.FormValue("email"))
-	// if user != nil {
-	// 	http.Redirect(w, r, "/logins", http.StatusSeeOther)
-	// }
+	user, _ := db.FindUserByEmail(db.Client, r.FormValue("email"))
+	if user != nil {
+		http.Redirect(w, r, "/logins", http.StatusSeeOther)
+	}
 	// Generate a verification code
 	verificationCode = generateVerificationCode()
 
@@ -645,7 +604,7 @@ func verifyRole(next http.HandlerFunc) http.HandlerFunc {
 		token := cookie.Value
 
 		// Verify the token and retrieve user information
-		user, err := db.FindUserByToken(client, token)
+		user, err := db.FindUserByToken(db.Client, token)
 
 		if user.Role != "ADMIN" {
 			http.Redirect(w, r, "/error", http.StatusSeeOther)
@@ -671,7 +630,7 @@ func verifyToken(next http.HandlerFunc) http.HandlerFunc {
 		token := cookie.Value
 
 		// Verify the token and retrieve user information
-		user, err := db.FindUserByToken(client, token)
+		user, err := db.FindUserByToken(db.Client, token)
 		if err != nil {
 			http.Redirect(w, r, "/logins", http.StatusSeeOther)
 			return
@@ -714,7 +673,7 @@ func confirmVerificationCodeHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		fmt.Println(token)
 		newUser.AccessToken = token
-		err = db.InsertData(client, newUser)
+		err = db.InsertData(db.Client, newUser)
 		if err != nil {
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			return
@@ -753,7 +712,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := db.FindUserByEmail(client, r.FormValue("email"))
+	user, err := db.FindUserByEmail(db.Client, r.FormValue("email"))
 	if err != nil {
 		http.Error(w, "Unauthorized: Invalid credentials", http.StatusUnauthorized)
 		return
@@ -774,16 +733,23 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Set the token in a cookie
-	newCookie := http.Cookie{
+	newCookie1 := http.Cookie{
 		Name:     "token",
 		Value:    token,
 		HttpOnly: true,
 		Expires:  time.Now().Add(time.Hour * 1), // Token expires in 1 hour
 	}
-	http.SetCookie(w, &newCookie)
+	http.SetCookie(w, &newCookie1)
+	newCookie2 := http.Cookie{
+		Name:     "email",
+		Value:    user.Email,
+		HttpOnly: true,
+	}
+
+	http.SetCookie(w, &newCookie2)
 
 	// Update user's access token in the database
-	if err := db.UpdateUserUsernameByEmail(client, user.Email, "access_token", token); err != nil {
+	if err := db.UpdateUserUsernameByEmail(db.Client, user.Email, "access_token", token); err != nil {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
@@ -823,7 +789,7 @@ func sendVerificationCode(email, code string) error {
 func sendMessageToAllEmails(subject string, info string) error {
 	// Set up the authentication credentials for the SMTP server
 	auth := smtp.PlainAuth("", os.Getenv("MAIL"), os.Getenv("SMTP_PASSWORD"), os.Getenv("SMTP_SERVER"))
-	emails, err := db.GetUserEmails(client)
+	emails, err := db.GetUserEmails(db.Client)
 	if err != nil {
 		return fmt.Errorf("failed to get user emails: %v", err)
 	}
@@ -1082,7 +1048,7 @@ func verifyUser(r *http.Request) bool {
 		return false
 	}
 	token := cookie.Value
-	user, err := db.FindUserByToken(client, token)
+	user, err := db.FindUserByToken(db.Client, token)
 	if err != nil {
 		return false
 	}
@@ -1105,7 +1071,7 @@ func accountHandler(w http.ResponseWriter, r *http.Request) {
 			fmt.Println("Error parsing HTML template:", err)
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		}
-		user, err := db.FindUserByToken(client, token)
+		user, err := db.FindUserByToken(db.Client, token)
 		if user.Role == "ADMIN" {
 			handleAdmin(w, r)
 			return
