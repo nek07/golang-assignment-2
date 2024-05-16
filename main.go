@@ -16,12 +16,14 @@ import (
 	"os"
 	"time"
 
-	"github.com/golang-jwt/jwt"
-	_ "github.com/joho/godotenv/autoload"
-
 	"ass3/db"
 	"html/template" //end damir
 	"strconv"
+
+	"ass3/chat"
+
+	"github.com/golang-jwt/jwt"
+	_ "github.com/joho/godotenv/autoload"
 
 	//Damir
 	_ "github.com/eminetto/mongo-migrate"
@@ -152,6 +154,10 @@ func handleRoutes() {
 	r.HandleFunc("/account/{id}/edit", verifyToken(rateLimitedHandler(editAccountHandler)))
 	r.HandleFunc("/account/logout", verifyToken(rateLimitedHandler(logoutHandler)))
 
+	r.HandleFunc("/support", chatHandler)
+	room := chat.NewRoom()
+	go room.Run()
+	r.HandleFunc("/room", room.HandleRoom)
 	port := 10000
 	fmt.Printf("Server is running on http://localhost:%d\n", port)
 	// Использование маршрутизатора вместо http.ListenAndServe
@@ -160,14 +166,10 @@ func handleRoutes() {
 		log.WithError(err).Error("Error starting server")
 	}
 }
+
 func main() {
 	connectDB()
 	handleRoutes()
-	// Disconnect from MongoDB
-	// err = client.Disconnect(ctx)
-	// if err != nil {
-	// 	log.WithError(err).Error("Error disconnecting from MongoDB")
-	// }
 
 }
 func homeHandler(w http.ResponseWriter, r *http.Request) {
@@ -201,7 +203,18 @@ func registrationPageHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
 }
+func chatHandler(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/support" {
+		error404PageHandler(w, r)
+		return
+	}
 
+	if r.Method == http.MethodGet {
+		http.ServeFile(w, r, "public/chat.html")
+	} else {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	}
+}
 func loginPageHandler(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/logins" {
 		error404PageHandler(w, r)
@@ -1142,7 +1155,6 @@ func logoutHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Logged out successfully"))
 }
 
-
 func recomInsert(recoms <-chan string, done chan<- bool) { //results chan<- int
 	for recom := range recoms {
 		fmt.Println(recom)
@@ -1168,14 +1180,14 @@ func recHandler(w http.ResponseWriter, r *http.Request) {
 }
 func submitRecsHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
-		goroutines := 100;
+		goroutines := 100
 
 		if err := r.ParseForm(); err != nil {
 			http.Error(w, "Failed to parse form data", http.StatusInternalServerError)
 			return
 		}
 		comments := r.Form["comment[]"]
-		
+
 		fmt.Println("Start ------ Start")
 		done := make(chan bool)
 		recoms := make(chan string)
@@ -1184,7 +1196,6 @@ func submitRecsHandler(w http.ResponseWriter, r *http.Request) {
 		// var wg sync.WaitGroup
 		// wg.Add(recoms)
 
-
 		for w := 1; w <= goroutines; w++ {
 			go recomInsert(recoms, done)
 		}
@@ -1192,7 +1203,7 @@ func submitRecsHandler(w http.ResponseWriter, r *http.Request) {
 			recoms <- comment
 		}
 		close(recoms)
-		for range comments{
+		for range comments {
 			<-done
 		}
 		elapsed := time.Since(start)
