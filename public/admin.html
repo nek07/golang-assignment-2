@@ -6,244 +6,611 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Panel</title>
   <!-- Bootstrap CSS -->
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <style>
+    body {
+      margin: 0;
+      padding: 80px;
+    }
+  .card {
+      background: #fff;
+      transition: .5s;
+      border: 0;
+      margin-bottom: 30px;
+      border-radius: .55rem;
+      position: relative;
+      width: 100%;
+      box-shadow: 0 1px 2px 0 rgb(0 0 0 / 10%);
+  }
+  .chat-app .people-list {
+      width: 280px;
+      position: absolute;
+      left: 0;
+      top: 0;
+      padding: 20px;
+      z-index: 7
+  }
+  
+  .chat-app .chat {
+      margin-left: 280px;
+      border-left: 1px solid #eaeaea
+  }
+  
+  .people-list {
+      -moz-transition: .5s;
+      -o-transition: .5s;
+      -webkit-transition: .5s;
+      transition: .5s
+  }
+  
+  .people-list .chat-list li {
+      padding: 10px 15px;
+      list-style: none;
+      border-radius: 3px
+  }
+  
+  .people-list .chat-list li:hover {
+      background: #efefef;
+      cursor: pointer
+  }
+  
+  .people-list .chat-list li.active {
+      background: #efefef
+  }
+  
+  .people-list .chat-list li .name {
+      font-size: 15px
+  }
+  
+  .people-list .chat-list img {
+      width: 45px;
+      border-radius: 50%
+  }
+  
+  .people-list img {
+      float: left;
+      border-radius: 50%
+  }
+  
+  .people-list .about {
+      float: left;
+      padding-left: 8px
+  }
+  
+  .people-list .status {
+      color: #999;
+      font-size: 13px
+  }
+  
+  .chat .chat-header {
+      padding: 15px 20px;
+      border-bottom: 2px solid #f4f7f6
+  }
+  
+  .chat .chat-header img {
+      float: left;
+      border-radius: 40px;
+      width: 40px
+  }
+  
+  .chat .chat-header .chat-about {
+      float: left;
+      padding-left: 10px
+  }
+  
+  .chat .chat-history {
+      padding: 20px;
+      border-bottom: 2px solid #fff
+  }
+  
+  .chat .chat-history ul {
+      padding: 0
+  }
+  
+  .chat .chat-history ul li {
+      list-style: none;
+      margin-bottom: 30px
+  }
+  
+  .chat .chat-history ul li:last-child {
+      margin-bottom: 0px
+  }
+  
+  .chat .chat-history .message-data {
+      margin-bottom: 15px
+  }
+  
+  .chat .chat-history .message-data img {
+      border-radius: 40px;
+      width: 40px
+  }
+  
+  .chat .chat-history .message-data-time {
+      color: #434651;
+      padding-left: 6px
+  }
+  
+  .chat .chat-history .message {
+      color: #444;
+      padding: 18px 20px;
+      line-height: 26px;
+      font-size: 16px;
+      border-radius: 7px;
+      display: inline-block;
+      position: relative
+  }
+  
+  .chat .chat-history .message:after {
+      bottom: 100%;
+      left: 7%;
+      border: solid transparent;
+      content: " ";
+      height: 0;
+      width: 0;
+      position: absolute;
+      pointer-events: none;
+      border-bottom-color: #fff;
+      border-width: 10px;
+      margin-left: -10px
+  }
+  
+  .chat .chat-history .my-message {
+      background: #efefef
+  }
+  
+  .chat .chat-history .my-message:after {
+      bottom: 100%;
+      left: 30px;
+      border: solid transparent;
+      content: " ";
+      height: 0;
+      width: 0;
+      position: absolute;
+      pointer-events: none;
+      border-bottom-color: #efefef;
+      border-width: 10px;
+      margin-left: -10px
+  }
+  
+  .chat .chat-history .other-message {
+      background: #e8f1f3;
+      text-align: right
+  }
+  
+  .chat .chat-history .other-message:after {
+      border-bottom-color: #e8f1f3;
+      left: 93%
+  }
+  
+  .chat .chat-message {
+      padding: 20px
+  }
+  
+  .online,
+  .offline,
+  .me {
+      margin-right: 2px;
+      font-size: 8px;
+      vertical-align: middle
+  }
+  
+  .online {
+      color: #86c541
+  }
+  
+  .offline {
+      color: #e47297
+  }
+  
+  .me {
+      color: #1d8ecd
+  }
+  
+  .float-right {
+      float: right
+  }
+  
+  .clearfix:after {
+      visibility: hidden;
+      display: block;
+      font-size: 0;
+      content: " ";
+      clear: both;
+      height: 0
+  }
+  
+  @media only screen and (max-width: 767px) {
+      .chat-app .people-list {
+          height: 465px;
+          width: 100%;
+          overflow-x: auto;
+          background: #fff;
+          left: -400px;
+          display: none
+      }
+      .chat-app .people-list.open {
+          left: 0
+      }
+      .chat-app .chat {
+          margin: 0
+      }
+      .chat-app .chat .chat-header {
+          border-radius: 0.55rem 0.55rem 0 0
+      }
+      .chat-app .chat-history {
+          height: 300px;
+          overflow-x: auto
+      }
+  }
+  
+  @media only screen and (min-width: 768px) and (max-width: 992px) {
+      .chat-app .chat-list {
+          height: 650px;
+          overflow-x: auto
+      }
+      .chat-app .chat-history {
+          height: 600px;
+          overflow-x: auto
+      }
+  }
+  
+  @media only screen and (min-device-width: 768px) and (max-device-width: 1024px) and (orientation: landscape) and (-webkit-min-device-pixel-ratio: 1) {
+      .chat-app .chat-list {
+          height: 480px;
+          overflow-x: auto
+      }
+      .chat-app .chat-history {
+          height: calc(100vh - 350px);
+          overflow-x: auto
+      }
+  }
+
+    .navbar {
+      
+      display: fixed;
+    }
+
+    .sidebar {
+      height: 100vh;
+      position: fixed;
+      top: 56px; /* Adjusted to be below the navbar */
+      left: 0;
+      width: 250px;
+      background-color: #343a40;
+      color: #fff;
+      padding-top: 20px;
+      overflow-y: auto;
+      transition: width 0.3s;
+    }
+
+    .sidebar.collapsed {
+      width: 70px;
+    }
+
+    .sidebar a {
+      color: #fff;
+      padding: 10px;
+      text-decoration: none;
+      display: block;
+      transition: opacity 0.3s;
+    }
+
+    .sidebar.collapsed a {
+      opacity: 0;
+    }
+
+    .sidebar a:hover {
+      background-color: #575757;
+    }
+
+    .main-content {
+      margin-left: 260px;
+      padding: 20px;
+      transition: margin-left 0.3s;
+    }
+
+    .main-content.collapsed {
+      margin-left: 80px;
+    }
+
+    .hidden {
+      display: none;
+      margin-top: 100px !important;
+    }
+
+    .navbar-brand {
+      display: flex;
+      align-items: center;
+    }
+
+    .navbar-brand img {
+      height: 40px;
+      margin-right: 10px;
+    }
+
+    .burger {
+      cursor: pointer;
+      font-size: 1.5rem;
+      color: #fff;
+    }
+    .navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 1000; /* Adjust the z-index as needed */
+      
+    }
+  </style>
 </head>
 
 <body>
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark p-3">
     <div class="container-fluid">
-        <a class="navbar-brand" href="/">minima.</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown"
-            aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
+      <span class="burger" onclick="toggleSidebar()">&#9776;</span>
+      <a class="navbar-brand" href="/">
+        minima.
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown"
+        aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
 
-        <div class=" collapse navbar-collapse" id="navbarNavDropdown">
-            <ul class="navbar-nav ml-auto ">
-                <li class="nav-item">
-                    <a class="nav-link mx-2 active" aria-current="page" href="/products">Products</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link mx-2" href="/basket">Cart</a>
-                </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link mx-2" href="/logins" id="navbarDropdownMenuLink">Login
-                    </a>
+      <div class="collapse navbar-collapse" id="navbarNavDropdown">
+        <ul class="navbar-nav ml-auto">
+          <li class="nav-item">
+            <a class="nav-link mx-2 active" aria-current="page" href="/products">Products</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link mx-2" href="/basket">Cart</a>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link mx-2" href="/logins" id="navbarDropdownMenuLink">Login</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
 
-                </li>
-            </ul>
+  <div class="sidebar" id="sidebar">
+    <a href="#newsletterSection" onclick="showSection('newsletterSection')">Submit Newsletter</a>
+    <a href="#addProductSection" onclick="showSection('addProductSection')">Add New Product</a>
+    <a href="#productListSection" onclick="showSection('productListSection')">Product List</a>
+    <a href="#chatSection" onclick="showSection('chatSection')">Chat</a>
+  </div>
+
+  <div class="main-content" id="main-content">
+    <div id="newsletterSection" class="hidden">
+      <h2 class="mb-4 mt-5">Submit Newsletter</h2>
+      <form action="/admin/submitNewsletter" method="post">
+        <div class="form-group">
+          <label for="subject">Subject:</label>
+          <input type="text" id="subject" name="subject" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label for="info">Text:</label>
+          <textarea id="info" name="info" rows="4" class="form-control" required></textarea>
+        </div>
+        <div class="form-group">
+          <input type="submit" value="Submit" class="btn btn-primary btn-block">
+        </div>
+      </form>
+    </div>
+
+    <div id="addProductSection" class="hidden">
+      <h2>Add New Product</h2>
+      <form class="mt-5 mb-5" id="addForm">
+        <div class="form-group">
+          <label for="brand">Brand:</label>
+          <input type="text" class="form-control" id="brand" name="brand" required>
+        </div>
+        <div class="form-group">
+          <label for="model">Model:</label>
+          <input type="text" class="form-control" id="model" name="model" required>
+        </div>
+        <div class="form-group">
+          <label for="description">Description:</label>
+          <input type="text" class="form-control" id="description" name="description" required>
+        </div>
+        <div class="form-group">
+          <label for="price">Price:</label>
+          <input type="number" class="form-control" id="price" name="price" required>
+        </div>
+        <div id="status"></div>
+        <button type="button" class="btn btn-primary" onclick="saveProd()">Add Product</button>
+      </form>
+    </div>
+    <div id="chatSection" class="hidden">
+      <div class="container">
+        <div class="row clearfix">
+            <div class="col-lg-12">
+                <div class="card chat-app">
+                    <div id="plist" class="people-list">
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text"><i class="fa fa-search"></i></span>
+                            </div>
+                            <input type="text" class="form-control" placeholder="Search...">
+                        </div>
+                        <ul class="list-unstyled chat-list mt-2 mb-0">
+                            <li class="clearfix">
+                                <img src="https://bootdey.com/img/Content/avatar/avatar1.png" alt="avatar">
+                                <div class="about">
+                                    <div class="name">Vincent Porter</div>
+                                    <div class="status"> <i class="fa fa-circle offline"></i> left 7 mins ago </div>                                            
+                                </div>
+                            </li>
+                            <li class="clearfix active">
+                                <img src="https://bootdey.com/img/Content/avatar/avatar2.png" alt="avatar">
+                                <div class="about">
+                                    <div class="name">Aiden Chavez</div>
+                                    <div class="status"> <i class="fa fa-circle online"></i> online </div>
+                                </div>
+                            </li>
+                            <li class="clearfix">
+                                <img src="https://bootdey.com/img/Content/avatar/avatar3.png" alt="avatar">
+                                <div class="about">
+                                    <div class="name">Mike Thomas</div>
+                                    <div class="status"> <i class="fa fa-circle online"></i> online </div>
+                                </div>
+                            </li>                                    
+                            <li class="clearfix">
+                                <img src="https://bootdey.com/img/Content/avatar/avatar7.png" alt="avatar">
+                                <div class="about">
+                                    <div class="name">Christian Kelly</div>
+                                    <div class="status"> <i class="fa fa-circle offline"></i> left 10 hours ago </div>
+                                </div>
+                            </li>
+                            <li class="clearfix">
+                                <img src="https://bootdey.com/img/Content/avatar/avatar8.png" alt="avatar">
+                                <div class="about">
+                                    <div class="name">Monica Ward</div>
+                                    <div class="status"> <i class="fa fa-circle online"></i> online </div>
+                                </div>
+                            </li>
+                            <li class="clearfix">
+                                <img src="https://bootdey.com/img/Content/avatar/avatar3.png" alt="avatar">
+                                <div class="about">
+                                    <div class="name">Dean Henry</div>
+                                    <div class="status"> <i class="fa fa-circle offline"></i> offline since Oct 28 </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="chat">
+                        <div class="chat-header clearfix">
+                            <div class="row">
+                                <div class="col-lg-6">
+                                    <a href="javascript:void(0);" data-toggle="modal" data-target="#view_info">
+                                        <img src="https://bootdey.com/img/Content/avatar/avatar2.png" alt="avatar">
+                                    </a>
+                                    <div class="chat-about">
+                                        <h6 class="m-b-0">Aiden Chavez</h6>
+                                        <small>Last seen: 2 hours ago</small>
+                                    </div>
+                                </div>
+                                <div class="col-lg-6 hidden-sm text-right">
+                                    <a href="javascript:void(0);" class="btn btn-outline-secondary"><i class="fa fa-camera"></i></a>
+                                    <a href="javascript:void(0);" class="btn btn-outline-primary"><i class="fa fa-image"></i></a>
+                                    <a href="javascript:void(0);" class="btn btn-outline-info"><i class="fa fa-cogs"></i></a>
+                                    <a href="javascript:void(0);" class="btn btn-outline-warning"><i class="fa fa-question"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="chat-history">
+                            <ul class="m-b-0">
+                                <li class="clearfix">
+                                    <div class="message-data text-right">
+                                        <span class="message-data-time">10:10 AM, Today</span>
+                                        <img src="https://bootdey.com/img/Content/avatar/avatar7.png" alt="avatar">
+                                    </div>
+                                    <div class="message other-message float-right"> Hi Aiden, how are you? How is the project coming along? </div>
+                                </li>
+                                <li class="clearfix">
+                                    <div class="message-data">
+                                        <span class="message-data-time">10:12 AM, Today</span>
+                                    </div>
+                                    <div class="message my-message">Are we meeting today?</div>                                    
+                                </li>                               
+                                <li class="clearfix">
+                                    <div class="message-data">
+                                        <span class="message-data-time">10:15 AM, Today</span>
+                                    </div>
+                                    <div class="message my-message">Project has been already finished and I have results to show you.</div>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="chat-message clearfix">
+                            <div class="input-group mb-0">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fa fa-send"></i></span>
+                                </div>
+                                <input type="text" class="form-control" placeholder="Enter text here...">                                    
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         </div>
     </div>
-</nav>
-  <div class="container">
-    <h1 class="text-center pt-5">Admin Panel - Product Management</h1>
-      <h2 class="mb-4 mt-5">Submit Newsletter</h2>
-        <form action="/admin/submitNewsletter" method="post">
-            <div class="form-group">
-                <label for="subject">Subject:</label>
-                <input type="text" id="subject" name="subject" class="form-control" required>
-            </div>
-            <div class="form-group">
-                <label for="info">Text:</label>
-                <textarea id="info" name="info" rows="4" class="form-control" required></textarea>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Submit" class="btn btn-primary btn-block">
-            </div>
-        </form>
-    <!-- Form for adding a new product -->
-    <form class="mt-5 mb-5" id="addForm">
-      <h2>Add New Product</h2>
-      <div class="form-group">
-        <label for="brand">Brand:</label>
-        <input type="text" class="form-control" id="brand" name="brand" required>
+    <div id="productListSection" class="hidden">
+      <div class="container mt-3 filters-container w-100" style="display: flex; justify-content: space-between;">
+        <label for="categoryFilter" class="filter-dropdown">Brand:
+          <select id="categoryFilter">
+            <option value="">All</option>
+            <option value="Apple">Apple</option>
+            <option value="Acer">Acer</option>
+            <option value="Asus">Asus</option>
+            <option value="Lenovo">Lenovo</option>
+            <option value="MSI">MSI</option>
+            <option value="Dell">Dell</option>
+            <option value="HP">HP</option>
+            <option value="Razer">Razer</option>
+          </select>
+        </label>
+        <label for="priceRange" class="filter-dropdown">Price:
+          <input type="range" id="minPriceRange" class="price-range" min="0" max="5000000" step="10000" value="0">
+          <input type="range" id="maxPriceRange" class="price-range" min="0" max="5000000" step="10000" value="5000000">
+          <span>Min:<span class="price-output" id="minPriceOutput">0</span>T</span>
+          <span>Max:<span class="price-output" id="maxPriceOutput">5000000</span>T</span>
+        </label>
+        <label for="sortFilter" class="sort-dropdown">Sort by:
+          <select id="sortFilter">
+            <option value=""></option>
+            <option value="asc">Price Ascending</option>
+            <option value="desc">Price Descending</option>
+          </select>
+        </label>
+        <button id="applyFilters" class="btn btn-info">Apply Filters</button>
       </div>
-      <div class="form-group">
-        <label for="model">Model:</label>
-        <input type="text" class="form-control" id="model" name="model" required>
+
+      <h2 class="text-center">Найдено: <span id="laptopsCount">{{.DocumentCount}}</span></h2>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Product ID</th>
+            <th>Name</th>
+            <th>Price</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{range .Laptops}}
+          <tr>
+            <td>{{.Brand}}</td>
+            <td>{{.Model}}</td>
+            <td>{{.Price}}</td>
+            <td>
+              <a href="/admin/edit/{{.ID}}" class="btn btn-primary">Edit</a>
+              <a class="btn btn-danger" onclick="deleteProd('{{.ID}}')">Delete</a>
+            </td>
+          </tr>
+          {{end}}
+        </tbody>
+      </table>
+      <div id="pagination" class="mt-3 mb-3" style="display: flex; width: 100%; justify-content: space-between;">
+        <button id="prevPage" class="btn btn-outline-info">Previous Page</button>
+        <div id="pageButtons"></div>
+        <button id="nextPage" class="btn btn-outline-info">Next Page</button>
       </div>
-      <div class="form-group">
-        <label for="description">Description:</label>
-        <input type="text" class="form-control" id="description" name="description" required>
-      </div>
-      <div class="form-group">
-        <label for="price">Price:</label>
-        <input type="number" class="form-control" id="price" name="price"required>
-      </div>
-      <div id="status"></div>
-      <button type="button" class="btn btn-primary" onclick="saveProd()">Add Product</button>
-    </form>
-
-    <hr>
-
-    <!-- Table for displaying existing products -->
-    <h2 class="mt-5">Product List</h2>
-    <div class="container mt-3 filters-container w-100" style="display: flex; justify-content: space-between;">
-      <label for="categoryFilter" class="filter-dropdown">Brand:
-        <select id="categoryFilter">
-          <option value="">All</option>
-          <option value="Apple">Apple</option>
-          <option value="Acer">Acer</option>
-          <option value="Asus">Asus</option>
-          <option value="Lenovo">Lenovo</option>
-          <option value="MSI">MSI</option>
-          <option value="Dell">Dell</option>
-          <option value="HP">HP</option>
-          <option value="Razer">Razer</option>
-
-
-          <!-- Add more categories as needed -->
-        </select>
-      </label>
-      <label for="priceRange" class="filter-dropdown">Price:
-        <input type="range" id="minPriceRange" class="price-range" min="0" max="5000000" step="10000" value="0">
-        <input type="range" id="maxPriceRange" class="price-range" min="0" max="5000000" step="10000" value="5000000">
-        <span>Min:<span class="price-output" id="minPriceOutput">0</span>T</span>
-        <span>Max:<span class="price-output" id="maxPriceOutput">5000000</span>T</span>
-      </label>
-      <label for="sortFilter" class="sort-dropdown">Sort by:
-        <select id="sortFilter">
-          <option value=""></option>
-          <option value="asc">Price Ascending</option>
-          <option value="desc">Price Descending</option>
-        </select>
-      </label>
-      <!-- Add more filters as needed -->
-      <button id="applyFilters" class="btn btn-info">Apply Filters</button>
-    </div>
-
-    <h2 class="text-center">Найдено: <span id="laptopsCount">{{.DocumentCount}}</span></h2>
-    <table class="table">
-      <thead>
-        <tr>
-          <th>Product ID</th>
-          <th>Name</th>
-          <th>Price</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {{range .Laptops}}
-        <tr>
-          <td>{{.Brand}}</td>
-          <td>{{.Model}}</td>
-          <td>{{.Price}}</td>
-          <td>
-            <a href="/admin/edit/{{.ID}}" class="btn btn-primary">Edit</a>
-            <a class="btn btn-danger" onclick="deleteProd('{{.ID}}')">Delete</a>
-          </td>
-        </tr>
-        {{end}}
-      </tbody>
-    </table>
-    <div id="pagination" class="mt-3 mb-3" style="display: flex; width: 100%; justify-content: space-between;">
-      <button id="prevPage" class="btn btn-outline-info">Previous Page</button>
-      <div id="pageButtons">
-
-      </div>
-      <button id="nextPage" class="btn btn-outline-info">Next Page</button>
     </div>
   </div>
 
-
   <script>
-    document.getElementById('applyFilters').addEventListener('click', function () {
-      // Get selected values
-      var brand = document.getElementById('categoryFilter').value || "";
-      var minPrice = document.getElementById('minPriceRange').value || "";
-      var maxPrice = document.getElementById('maxPriceRange').value || "";
-      var sortBy = document.getElementById('sortFilter').value || "";
-      var page = currentPage;
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('collapsed');
+      document.getElementById('main-content').classList.toggle('collapsed');
+    }
 
-      // Construct the URL
-      var url = '/admin?brand=' + brand +
-        '&min=' + minPrice +
-        '&max=' + maxPrice +
-        '&sort=' + sortBy +
-        '&page=' + 1;
-
-      window.location.href = url;
-    })
-    let params = new URLSearchParams(location.search);
-    var currentPage = params.get('page');
-    if (currentPage !== 1) {
-      document.getElementById('prevPage').addEventListener('click', function () {
-        if (currentPage > 1) {
-          redirectOnPage(--currentPage);
-        }
+    function showSection(sectionId) {
+      var sections = document.querySelectorAll('.main-content > div');
+      sections.forEach(section => {
+        section.classList.add('hidden');
       });
+      document.getElementById(sectionId).classList.remove('hidden');
     }
-    document.getElementById('nextPage').addEventListener('click', function () {
-      if (currentPage < document.getElementById('laptopsCount').innerHTML / 10)
-        redirectOnPage(++currentPage)
-    });
-    function redirectOnPage(page) {
-      window.location.href = '/admin?brand=' + (params.get('brand') || "") +
-        '&min=' + (params.get('min') || "") +
-        '&max=' + (params.get('max') || "") +
-        '&sort=' + (params.get('sort') || "") +
-        '&page=' + page;
-    }
-    function createPaginationButtons() {
-      const pageDiv = document.getElementById('pageButtons')
-      const laptopsCount = document.getElementById('laptopsCount').innerHTML;
-      for (let i = 0; i <= laptopsCount / 10; i++) {
-        if (currentPage == i + 1) {
-          pageDiv.innerHTML += '<button class="btn btn-secondary m-2" disabled>' + (i + 1) + '</button>'
-        } else {
-          pageDiv.innerHTML += '<button class="btn btn-outline-secondary m-2" onclick="redirectOnPage(' + (i + 1) + ')">' + (i + 1) + '</button>'
-        }
-      }
-    }
-    createPaginationButtons()
-
-
-    function deleteProd(id) {
-      fetch("/admin/delete/" + id, {
-        method: 'DELETE'
-      })
-        .then(response => response.json())
-        .then(data => {
-          // callback(data);
-        })
-        .catch(error => console.error('ErrorTest:', error));
-        window.location.href = "/admin?" + params;
-    }
-
-    function putReqProd(callback, formData) {
-            fetch("/admin/add", {
-                method: 'POST', // Используем метод PUT
-                mode: "cors",
-                cache: "no-cache",
-                credentials: "same-origin",
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded",
-                },
-                redirect: "follow",
-                referrerPolicy: "no-referrer",
-                body: new URLSearchParams(formData).toString(),
-            })
-                .then(response => response.json())
-                .then(data => {
-                    callback(data);
-                })
-                .catch(error => console.error('ErrorTest:', error));
-        }
-
-        function saveProd(id) {
-            const formData = new FormData(document.getElementById('addForm'));
-            putReqProd(updateStatus, formData);
-        }
-        function updateStatus(data) {
-            const alert = document.getElementById('status');
-            if (data.message != "") {
-                alert.classList = 'alert alert-info mt-3';
-                alert.innerHTML = data.message;
-            } else {
-                alert.classList = "";
-                alert.innerHTML = "";
-            }
-        }
   </script>
 </body>
 
