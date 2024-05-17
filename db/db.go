@@ -62,6 +62,38 @@ func ConnectDB() {
 
 	fmt.Println("Connected to MongoDB Atlas!")
 }
+func GetUniqueChatIDDocuments() ([]bson.M, error) {
+	collection := Client.Database("go-assignment-2").Collection("Chats")
+
+	// Use MongoDB aggregation to get unique chat_id values
+	pipeline := []bson.M{
+		{
+			"$group": bson.M{
+				"_id": "$chat_id",
+			},
+		},
+		{
+			"$project": bson.M{
+				"chat_id": "$_id",
+				"_id":     0,
+				"sender":  1,
+			},
+		},
+	}
+
+	cursor, err := collection.Aggregate(context.Background(), pipeline)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(context.Background())
+
+	var results []bson.M
+	if err := cursor.All(context.Background(), &results); err != nil {
+		return nil, err
+	}
+
+	return results, nil
+}
 
 type User struct {
 	ID          primitive.ObjectID `bson:"_id,omitempty" json:"id"`

@@ -39,7 +39,7 @@ import (
 	// "sync"
 )
 
-type Data struct {
+type Data1 struct {
 	DocumentCount int64 `json:"DocumentCount"`
 	Laptops       []db.Laptop
 }
@@ -113,7 +113,7 @@ func handleRoutes() {
 	r.HandleFunc("/account", verifyToken(rateLimitedHandler(accountHandler)))
 	r.HandleFunc("/account/{id}/edit", verifyToken(rateLimitedHandler(editAccountHandler)))
 	r.HandleFunc("/account/logout", verifyToken(rateLimitedHandler(logoutHandler)))
-
+	r.HandleFunc("/delete_chat", deleteChatHandler)
 	r.HandleFunc("/support", chatHandler)
 	room := chat.NewRoom("maroom")
 	go room.Run()
@@ -210,6 +210,48 @@ func chatHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
 }
+
+// func chatHandler(w http.ResponseWriter, r *http.Request) {
+// 	if r.URL.Path != "/support" {
+// 		error404PageHandler(w, r)
+// 		return
+// 	}
+
+// 	if r.Method == http.MethodGet {
+// 		// Get the email from the request or from the session, depending on your implementation
+// 		email := chat.GetEmailFromCookie(r) // Assuming you have a function to get email from cookie
+
+// 		// Generate a new random chat ID
+// 		chatID := uuid.New().String()
+
+// 		// Create a new chat room with the generated chat ID
+// 		room := chat.NewRoom(chatID)
+
+// 		// Start the chat room
+// 		go room.Run()
+
+// 		// Create a data struct with the email and chat ID
+// 		data := TemplateData{
+// 			Email:  email,
+// 			ChatID: chatID,
+// 		}
+
+// 		// Parse the HTML template
+// 		tmpl, err := template.ParseFiles("public/chat.html")
+// 		if err != nil {
+// 			http.Error(w, err.Error(), http.StatusInternalServerError)
+// 			return
+// 		}
+// 		// Execute the template with the data
+// 		err = tmpl.Execute(w, data)
+// 		if err != nil {
+// 			http.Error(w, err.Error(), http.StatusInternalServerError)
+// 			return
+// 		}
+// 	} else {
+// 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+// 	}
+// }
 
 func loginPageHandler(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/logins" {
@@ -323,7 +365,7 @@ func productsPageHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	data := Data{
+	data := Data1{
 		Laptops:       result,
 		DocumentCount: count,
 	}
@@ -433,36 +475,87 @@ func respondWithJSON(w http.ResponseWriter, data interface{}) {
 	json.NewEncoder(w).Encode(data)
 }
 func handleAdmin(w http.ResponseWriter, r *http.Request) {
-	brands := []string{r.URL.Query().Get("brand")}
-	sortBy := r.URL.Query().Get("sort")
-	minPrice, err := strconv.Atoi(r.URL.Query().Get("min"))
-	maxPrice, err := strconv.Atoi(r.URL.Query().Get("max"))
-	page, _ := strconv.Atoi(r.URL.Query().Get("page"))
+	// brands := []string{r.URL.Query().Get("brand")}
+	// sortBy := r.URL.Query().Get("sort")
+	// minPrice, err := strconv.Atoi(r.URL.Query().Get("min"))
+	// maxPrice, err := strconv.Atoi(r.URL.Query().Get("max"))
+	// page, _ := strconv.Atoi(r.URL.Query().Get("page"))
 
-	if page <= 0 {
-		page = 1
-	}
+	// if page <= 0 {
+	// 	page = 1
+	// }
 
-	if r.URL.Query().Get("min") == "" {
-		minPrice = 0
-	}
-	if r.URL.Query().Get("max") == "" {
-		maxPrice = 999999999
-	}
-	result, count, _ := db.FindProductsWithFilters(brands, minPrice, maxPrice, sortBy, page)
-	fmt.Println(result)
+	// if r.URL.Query().Get("min") == "" {
+	// 	minPrice = 0
+	// }
+	// if r.URL.Query().Get("max") == "" {
+	// 	maxPrice = 999999999
+	// }
+	// result, count, _ := db.FindProductsWithFilters(brands, minPrice, maxPrice, sortBy, page)
+	// fmt.Println(result)
 	tmpl, err := template.ParseFiles("public/admin.html")
 	if err != nil {
 		fmt.Println("Error parsing HTML template:", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 	}
-	data := Data{
-		Laptops:       result,
-		DocumentCount: count,
+	documents, err := db.GetUniqueChatIDDocuments()
+	if err != nil {
+		http.Error(w, "Failed to retrieve chat documents", http.StatusInternalServerError)
+		return
 	}
+	var chats []ChatDocument
+	for _, doc := range documents {
+		chatID, ok1 := doc["chat_id"].(string)
+
+		if ok1 {
+			chats = append(chats, ChatDocument{
+				ChatID: chatID,
+			})
+		}
+	}
+
+	data := Data{
+		Chats: chats,
+	}
+
 	// Execute the template with the list of ViewData items
 	tmpl.Execute(w, data)
 }
+func deleteChatHandler(w http.ResponseWriter, r *http.Request) {
+	chatID := r.URL.Query().Get("chat_id")
+
+	// MongoDB client initialization
+	// clientOptions := options.Client().ApplyURI("mongodb://localhost:27017")
+	// client, err := mongo.Connect(context.Background(), clientOptions)
+	// if err != nil {
+	// 	http.Error(w, "Failed to connect to the database", http.StatusInternalServerError)
+	// 	return
+	// }
+	// defer client.Disconnect(context.Background())
+
+	// Database and collection selection
+	collection := db.Client.Database("go-assignment-2").Collection("Chats")
+
+	// Delete the chat document from the database
+	_, err := collection.DeleteOne(context.Background(), bson.M{"chat_id": chatID})
+	if err != nil {
+		http.Error(w, "Failed to delete chat", http.StatusInternalServerError)
+		return
+	}
+
+	// Respond with a success message
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Chat deleted successfully"))
+}
+
+type ChatDocument struct {
+	ChatID string
+}
+
+type Data struct {
+	Chats []ChatDocument
+}
+
 func handleConcreteProduct(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	laptopID := vars["id"]
