@@ -22,6 +22,7 @@ import (
 	"ass3/chat"
 
 	"github.com/golang-jwt/jwt"
+	"github.com/google/uuid"
 	_ "github.com/joho/godotenv/autoload"
 
 	//Damir
@@ -162,6 +163,12 @@ func registrationPageHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
 }
+
+type TemplateData struct {
+	Email  string
+	ChatID string
+}
+
 func chatHandler(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/support" {
 		error404PageHandler(w, r)
@@ -169,11 +176,41 @@ func chatHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if r.Method == http.MethodGet {
-		http.ServeFile(w, r, "public/chat.html")
+		// Get the email from the request or from the session, depending on your implementation
+		email := chat.GetEmailFromCookie(r) // Assuming you have a function to get email from cookie
+
+		// Generate a new random chat ID
+		chatID := uuid.New().String()
+
+		// Create a new chat room with the generated chat ID
+		room := chat.NewRoom(chatID)
+
+		// Start the chat room
+		go room.Run()
+
+		// Create a data struct with the email and chat ID
+		data := TemplateData{
+			Email:  email,
+			ChatID: chatID,
+		}
+
+		// Parse the HTML template
+		tmpl, err := template.ParseFiles("public/chat.html")
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		// Execute the template with the data
+		err = tmpl.Execute(w, data)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	} else {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
 }
+
 func loginPageHandler(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/logins" {
 		error404PageHandler(w, r)

@@ -26,7 +26,7 @@ func (c *client) storeMessage(msg []byte, email string) {
 }
 
 // Function to get email from cookie
-func getEmailFromCookie(r *http.Request) string {
+func GetEmailFromCookie(r *http.Request) string {
 	cookie, err := r.Cookie("email")
 	if err != nil {
 		log.Println("Error retrieving email from cookie:", err)
@@ -77,7 +77,7 @@ func (c *client) write() {
 
 func (r *room) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	// Get the email from the cookie
-	email := getEmailFromCookie(req)
+	email := GetEmailFromCookie(req)
 
 	socket, err := upgrader.Upgrade(w, req, nil)
 	if err != nil {

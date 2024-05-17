@@ -413,7 +413,7 @@
                                         <div class="message-data">
                                             <span class="message-data-time">10:12 AM, Today</span>
                                         </div>
-                                        <div class="message my-message">Are we meeting today?</div>
+                                        <div class="message my-message"></div>
                                     </li>
                                     <li class="clearfix">
                                         <div class="message-data">
@@ -429,7 +429,7 @@
                                     <div class="input-group-prepend">
                                         <input type="submit" class="input-group-text fa fa-send" />
                                     </div>
-                                    <input type="text" class="text-input form-control" placeholder="Enter text here...">
+                                    <input type="text" class="text-input form-control" placeholder="Enter text here">
                                 </div>
                             </div>
                         </div>
@@ -442,54 +442,53 @@
 
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
     <script>
-        var now = new Date();
-
-        // Format the time in 12-hour format with AM/PM
-        var timeString = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
-
-        // Format the date as 'Today', 'Yesterday', or the full date
-        var dateString = now.toLocaleDateString('en-US', { weekday: 'long' });
-        if(dateString == now.toLocaleDateString('en-US', { weekday: 'long' })){
-            dateString="Today"
-        }
-        // Combine the time and date strings
-        var formattedTime = timeString + ', ' + dateString;
-        
         $(function () {
             var socket = null;
             var msgBox = $(".text-input");
             var messages = $(".chat-history ul");
-
+    
+            // Prevent form submission and send message using WebSocket
             $("#chatbox").submit(function (event) {
-                event.preventDefault(); // Prevent the form from submitting normally
-
+                event.preventDefault(); // Prevent default form submission behavior
+    
                 if (!msgBox.val()) return false;
                 if (!socket) {
                     alert("Error: There is no socket connection.");
                     return false;
                 }
-
+    
                 socket.send(msgBox.val());
                 msgBox.val("");
                 return false;
             });
-
+    
             if (!window["WebSocket"]) {
                 alert("Error: Your browser does not support web sockets.");
             } else {
                 socket = new WebSocket("ws://localhost:10000/room");
                 socket.onclose = function () {
                     alert("Connection has been closed.");
-                }
+                };
                 socket.onmessage = function (e) {
-                    messages.append("<li class='clearfix'><div class='message-data text-right'><span class='message-data-time'>" + formattedTime + "</span><img src='https://bootdey.com/img/Content/avatar/avatar7.png' alt='avatar'></div><div class='message other-message float-right'>" + e.data + "</div></li>");
-                    // Scroll to the bottom of the chat history after appending a new message
+                    var messageClass = ""; // Default message class
+    
+                    if ("{{ .Email }}" == '220439@astanait.edu.kz') {
+                        messageClass = "<li class='clearfix'><div class='message-data text-right'><span class='message-data-time'>" + '{{ .Email }}' + "</span><img src='https://bootdey.com/img/Content/avatar/avatar7.png' alt='avatar'></div><div class='message float-right my-message'>" + e.data + "</div></li>";
+                    } else {
+                        messageClass = "<li class='clearfix'><div class='message-data text-left'><img src='https://bootdey.com/img/Content/avatar/avatar7.png' alt='avatar'><span class='message-data-time'>" + '{{ .Email }}' + "</span></div><div class='message my-message'>" + e.data + "</div></li>";
+                    }
+                    messages.append(messageClass);
                     var chatHistory = $(".chat-history");
                     chatHistory.scrollTop(chatHistory.prop("scrollHeight"));
-                }
+                };
             }
         });
     </script>
+    
+    
+    
+
+
 </body>
 
 </html>

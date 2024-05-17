@@ -31,7 +31,20 @@
       padding: 20px;
       z-index: 7
   }
-  
+  table {
+    width: 100%;
+    border-collapse: collapse;
+}
+th, td {
+    border: 1px solid black;
+    padding: 8px;
+    text-align: left;
+}
+button {
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
   .chat-app .chat {
       margin-left: 280px;
       border-left: 1px solid #eaeaea
@@ -422,7 +435,19 @@
       </form>
     </div>
     <div id="chatSection" class="hidden">
-    
+      <h1>Admin Page</h1>
+      <table id="chat-table">
+          <thead>
+              <tr>
+                  <th>Chat ID</th>
+                  <th>User Email</th>
+                  <th>Action</th>
+              </tr>
+          </thead>
+          <tbody>
+              <!-- Table rows will be dynamically added here -->
+          </tbody>
+      </table>
     </div>
     <div id="productListSection" class="hidden">
       <div class="container mt-3 filters-container w-100" style="display: flex; justify-content: space-between;">
@@ -500,7 +525,46 @@
       });
       document.getElementById(sectionId).classList.remove('hidden');
     }
-  </script>
+    const chats = [
+    { chatId: "123abc", userEmail: "user1@example.com" },
+    { chatId: "456def", userEmail: "user2@example.com" },
+    { chatId: "789ghi", userEmail: "user3@example.com" }
+];
+
+// Function to render the chat table
+function renderChatTable() {
+    const tableBody = document.querySelector('#chat-table tbody');
+    tableBody.innerHTML = '';
+    chats.forEach(chat => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${chat.chatId}</td>
+            <td>${chat.userEmail}</td>
+            <td>
+                <button onclick="joinChat('${chat.chatId}')">Join Chat</button>
+                <button onclick="deleteChat('${chat.chatId}')">Delete Chat</button>
+            </td>
+        `;
+        tableBody.appendChild(row);
+    });
+}
+
+// Function to join a chat
+function joinChat(chatId) {
+    // Implement logic to join chat based on chatId
+    alert('Joining chat with ID: ' + chatId);
+}
+
+// Function to delete a chat
+function deleteChat(chatId) {
+    // Implement logic to delete chat based on chatId
+    alert('Deleting chat with ID: ' + chatId);
+}
+
+// Render the chat table when the page loads
+renderChatTable();
+</script>
+  
 </body>
 
 </html>
