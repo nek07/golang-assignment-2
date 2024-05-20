@@ -1,0 +1,3 @@
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-05-20T23:06:19+05:00","timestamp":"2024-05-20T23:06:19+05:00"}
+{"level":"fatal","msg":"Error creating MongoDB client:error parsing uri: lookup cluster0.qazvzjk.mongodb.net: dnsquery: This operation returned because the timeout period expired.","time":"2024-05-20T23:08:45+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-05-20T23:08:56+05:00","timestamp":"2024-05-20T23:08:56+05:00"}

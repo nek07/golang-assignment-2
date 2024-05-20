@@ -596,3 +596,34 @@
 {"action":"filter_products","brands":[""],"level":"info","maxPrice":999999999,"minPrice":0,"msg":"User filtered products","page":1,"sortBy":"","time":"2024-05-17T06:33:54+05:00","timestamp":"2024-05-17T06:33:54+05:00"}
 {"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-05-17T06:39:10+05:00","timestamp":"2024-05-17T06:39:10+05:00"}
 {"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-05-17T06:42:33+05:00","timestamp":"2024-05-17T06:42:33+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-05-17T06:45:35+05:00","timestamp":"2024-05-17T06:45:35+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-05-17T11:10:39+05:00","timestamp":"2024-05-17T11:10:39+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-05-17T11:20:07+05:00","timestamp":"2024-05-17T11:20:07+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-05-17T11:21:32+05:00","timestamp":"2024-05-17T11:21:32+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-05-17T11:22:41+05:00","timestamp":"2024-05-17T11:22:41+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-05-17T11:24:15+05:00","timestamp":"2024-05-17T11:24:15+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-05-17T11:24:41+05:00","timestamp":"2024-05-17T11:24:41+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-05-17T11:30:33+05:00","timestamp":"2024-05-17T11:30:33+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-05-17T11:31:37+05:00","timestamp":"2024-05-17T11:31:37+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-05-17T11:32:55+05:00","timestamp":"2024-05-17T11:32:55+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-05-17T11:33:56+05:00","timestamp":"2024-05-17T11:33:56+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-05-17T11:36:18+05:00","timestamp":"2024-05-17T11:36:18+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-05-17T11:37:16+05:00","timestamp":"2024-05-17T11:37:16+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-05-17T11:38:03+05:00","timestamp":"2024-05-17T11:38:03+05:00"}
+{"error":"server selection error: server selection timeout, current topology: { Type: ReplicaSetNoPrimary, Servers: [{ Addr: ac-riub2eq-shard-00-02.qazvzjk.mongodb.net:27017, Type: Unknown, Last error: context deadline exceeded }, { Addr: ac-riub2eq-shard-00-01.qazvzjk.mongodb.net:27017, Type: Unknown, Last error: context deadline exceeded }, { Addr: ac-riub2eq-shard-00-00.qazvzjk.mongodb.net:27017, Type: Unknown, Last error: context deadline exceeded }, ] }","level":"fatal","msg":"Error pinging MongoDB","time":"2024-05-17T11:38:33+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-05-17T11:38:38+05:00","timestamp":"2024-05-17T11:38:38+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-05-17T11:40:41+05:00","timestamp":"2024-05-17T11:40:41+05:00"}
+{"error":"timed out while checking out a connection from connection pool: context deadline exceeded; total connections: 1, maxPoolSize: 100, idle connections: 0, wait duration: 518.3224ms","level":"fatal","msg":"Error pinging MongoDB","time":"2024-05-17T11:41:11+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-05-17T11:41:16+05:00","timestamp":"2024-05-17T11:41:16+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-05-17T11:43:02+05:00","timestamp":"2024-05-17T11:43:02+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-05-17T11:52:31+05:00","timestamp":"2024-05-17T11:52:31+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-05-17T11:54:25+05:00","timestamp":"2024-05-17T11:54:25+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-05-17T12:00:58+05:00","timestamp":"2024-05-17T12:00:57+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-05-17T12:16:14+05:00","timestamp":"2024-05-17T12:16:14+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-05-17T12:20:22+05:00","timestamp":"2024-05-17T12:20:22+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-05-17T12:22:07+05:00","timestamp":"2024-05-17T12:22:07+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-05-17T12:22:51+05:00","timestamp":"2024-05-17T12:22:51+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-05-17T12:26:45+05:00","timestamp":"2024-05-17T12:26:45+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-05-17T12:35:12+05:00","timestamp":"2024-05-17T12:35:12+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-05-17T12:36:41+05:00","timestamp":"2024-05-17T12:36:41+05:00"}
+{"action":"server_access","level":"info","msg":"Client accessed the server","time":"2024-05-17T13:22:13+05:00","timestamp":"2024-05-17T13:22:13+05:00"}

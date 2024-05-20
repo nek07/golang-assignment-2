@@ -1,9 +1,10 @@
 package chat
 
 import (
-	"ass3/db"
 	"log"
 	"net/http"
+	"store/internal/database"
+	"store/internal/models"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -13,13 +14,13 @@ import (
 
 // Modify storeMessage method to accept email directly
 func (c *client) storeMessage(msg []byte, email string) {
-	chatMessage := db.ChatMessage{
+	chatMessage := models.ChatMessage{
 		ChatID:    c.room.GetChatID(),
 		Sender:    email,
 		Message:   string(msg),
 		Timestamp: time.Now(),
 	}
-	err := db.InsertMessage(chatMessage)
+	err := database.InsertMessage(chatMessage)
 	if err != nil {
 		log.Println("Error storing message:", err)
 	}

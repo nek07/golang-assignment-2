@@ -15,11 +15,12 @@ import (
 	"os"
 	"time"
 
-	"ass3/db"
 	"html/template" //end damir
-	"strconv"
 
-	"ass3/chat"
+	"store/internal/database"
+	"store/internal/models"
+	"store/service/chat"
+	"strconv"
 
 	"github.com/golang-jwt/jwt"
 	"github.com/google/uuid"
@@ -41,7 +42,7 @@ import (
 
 type Data1 struct {
 	DocumentCount int64 `json:"DocumentCount"`
-	Laptops       []db.Laptop
+	Laptops       []models.Laptop
 }
 
 const uri = "mongodb+srv://damir:CNW6CNosCC9VFPoG@cluster0.qazvzjk.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
@@ -87,12 +88,10 @@ func handleRoutes() {
 	r.HandleFunc("/logins", loginPageHandler)
 	r.HandleFunc("/login", loginHandler)
 	r.HandleFunc("/register", registerHandler)
-	r.HandleFunc("/recs", recHandler)
-	r.HandleFunc("/recs/submit", submitRecsHandler)
+
 	r.HandleFunc("/admin/submitNewsletter", newsletterHandler)
 	r.HandleFunc("/error", rateLimitedHandler(errorPageHandler))
-	r.HandleFunc("/crud", verifyToken(rateLimitedHandler(crudHandler)))
-	r.HandleFunc("/getUser", verifyToken(rateLimitedHandler(handleGetUser)))
+
 	r.HandleFunc("/updateUser", verifyToken(rateLimitedHandler(handleUpdateUser)))
 	r.HandleFunc("/deleteUser", verifyToken(rateLimitedHandler(handleDeleteUser)))
 	r.HandleFunc("/getAllUsers", verifyToken(rateLimitedHandler(handleGetAllUsers)))
@@ -126,9 +125,38 @@ func handleRoutes() {
 		log.WithError(err).Error("Error starting server")
 	}
 }
+func generateJWT(password string, username string) (string, error) {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"password": password,
+		"username": username,
+		"exp":      time.Now().Add(time.Hour * 1).Unix(), // Token expires in 1 hour
+	})
 
+	// Sign the token with the secret key
+	tokenString, err := token.SignedString(secretKey)
+	if err != nil {
+		return "", err
+	}
+
+	return tokenString, nil
+}
+func verifyUser(r *http.Request) bool {
+	cookie, err := r.Cookie("token")
+	if err != nil {
+		return false
+	}
+	token := cookie.Value
+	user, err := database.FindUserByToken(token)
+	if err != nil {
+		return false
+	}
+	if user == nil {
+		return false
+	}
+	return true
+}
 func main() {
-	db.ConnectDB()
+	database.ConnectDB()
 	handleRoutes()
 
 }
@@ -210,48 +238,6 @@ func chatHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
 }
-
-// func chatHandler(w http.ResponseWriter, r *http.Request) {
-// 	if r.URL.Path != "/support" {
-// 		error404PageHandler(w, r)
-// 		return
-// 	}
-
-// 	if r.Method == http.MethodGet {
-// 		// Get the email from the request or from the session, depending on your implementation
-// 		email := chat.GetEmailFromCookie(r) // Assuming you have a function to get email from cookie
-
-// 		// Generate a new random chat ID
-// 		chatID := uuid.New().String()
-
-// 		// Create a new chat room with the generated chat ID
-// 		room := chat.NewRoom(chatID)
-
-// 		// Start the chat room
-// 		go room.Run()
-
-// 		// Create a data struct with the email and chat ID
-// 		data := TemplateData{
-// 			Email:  email,
-// 			ChatID: chatID,
-// 		}
-
-// 		// Parse the HTML template
-// 		tmpl, err := template.ParseFiles("public/chat.html")
-// 		if err != nil {
-// 			http.Error(w, err.Error(), http.StatusInternalServerError)
-// 			return
-// 		}
-// 		// Execute the template with the data
-// 		err = tmpl.Execute(w, data)
-// 		if err != nil {
-// 			http.Error(w, err.Error(), http.StatusInternalServerError)
-// 			return
-// 		}
-// 	} else {
-// 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-// 	}
-// }
 
 func loginPageHandler(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/logins" {
@@ -338,7 +324,7 @@ func productsPageHandler(w http.ResponseWriter, r *http.Request) {
 		maxPrice = 999999999
 	}
 	filter := bson.D{}
-	db1 := db.Client.Database("go-assignment-2")
+	db1 := database.Client.Database("go-assignment-2")
 	collection1 := db1.Collection("products")
 	// query to get all users
 	cursor, err := collection1.Find(context.Background(), filter)
@@ -351,7 +337,7 @@ func productsPageHandler(w http.ResponseWriter, r *http.Request) {
 
 	// brands := []string{"Apple"}
 
-	result, count, err := db.FindProductsWithFilters(brands, minPrice, maxPrice, sortBy, page)
+	result, count, err := database.FindProductsWithFilters(brands, minPrice, maxPrice, sortBy, page)
 	// Log product filtering
 	log.WithFields(logrus.Fields{
 		"action":    "filter_products",
@@ -393,41 +379,33 @@ func error404PageHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
 } //end damir
-func crudHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodGet {
-		http.ServeFile(w, r, "public/crud.html")
-	} else {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-	}
-}
-func handleGetUser(w http.ResponseWriter, r *http.Request) {
-	// Get user ID from the request parameters
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
-	id := r.FormValue("userId")
-	foundUser, err := db.FindUserByID(ctx, db.Client, "go-assignment-2", "users", id)
-	if err != nil {
-		fmt.Println("user not found")
-		return
-	}
-	log.Printf("Get user result: %+v\n", foundUser)
-	// Convert userID to int
 
-	// Find user by ID (dummy data for illustration)
+// func handleGetUser(w http.ResponseWriter, r *http.Request) {
+// 	// Get user ID from the request parameters
 
-	// Respond with user data in a JSON format
-	if foundUser != nil {
-		respondWithJSON(w, foundUser)
-	} else {
-		respondWithMessage(w, "User not found")
-	}
-}
+// 	id := r.FormValue("userId")
+// 	foundUser, err := database.FindUserByID(id)
+// 	if err != nil {
+// 		fmt.Println("user not found")
+// 		return
+// 	}
+// 	log.Printf("Get user result: %+v\n", foundUser)
+// 	// Convert userID to int
+
+// 	// Find user by ID (dummy data for illustration)
+
+//		// Respond with user data in a JSON format
+//		if foundUser != nil {
+//			respondWithJSON(w, foundUser)
+//		} else {
+//			respondWithMessage(w, "User not found")
+//		}
+//	}
 func handleUpdateUser(w http.ResponseWriter, r *http.Request) {
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
+
 	userIDHex := r.FormValue("updateUserId")
 	newUsername := r.FormValue("newUsername")
-	var err error = db.UpdateUserUsernameByID(ctx, db.Client, "go-assignment-2", "users", userIDHex, newUsername)
+	var err error = database.UpdateUserUsernameByID(userIDHex, newUsername)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -436,10 +414,9 @@ func handleUpdateUser(w http.ResponseWriter, r *http.Request) {
 	respondWithMessage(w, "updated ofigeno")
 }
 func handleDeleteUser(w http.ResponseWriter, r *http.Request) {
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
+
 	userIDHex := r.FormValue("deleteUserId")
-	var err error = db.DeleteUserByID(ctx, db.Client, "go-assignment-2", "users", userIDHex)
+	var err error = database.DeleteUserByID(userIDHex)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -449,9 +426,8 @@ func handleDeleteUser(w http.ResponseWriter, r *http.Request) {
 }
 func handleGetAllUsers(w http.ResponseWriter, r *http.Request) {
 	// Get user ID from the request parameters
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
-	foundUsers, err := db.GetAllUsers(ctx, db.Client, "go-assignment-2", "users")
+
+	foundUsers, err := database.GetAllUsers()
 	if err != nil {
 		fmt.Println("user not found")
 		return
@@ -464,7 +440,7 @@ func handleGetAllUsers(w http.ResponseWriter, r *http.Request) {
 	}
 }
 func respondWithMessage(w http.ResponseWriter, msg string) {
-	// Respond with an error message in JSON format
+	// Respond with an error message in JSON di
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{"message": msg})
 }
@@ -498,7 +474,7 @@ func handleAdmin(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Error parsing HTML template:", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 	}
-	documents, err := db.GetUniqueChatIDDocuments()
+	documents, err := database.GetUniqueChatIDDocuments()
 	if err != nil {
 		http.Error(w, "Failed to retrieve chat documents", http.StatusInternalServerError)
 		return
@@ -534,7 +510,7 @@ func deleteChatHandler(w http.ResponseWriter, r *http.Request) {
 	// defer client.Disconnect(context.Background())
 
 	// Database and collection selection
-	collection := db.Client.Database("go-assignment-2").Collection("Chats")
+	collection := database.Client.Database("go-assignment-2").Collection("Chats")
 
 	// Delete the chat document from the database
 	_, err := collection.DeleteOne(context.Background(), bson.M{"chat_id": chatID})
@@ -559,7 +535,7 @@ type Data struct {
 func handleConcreteProduct(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	laptopID := vars["id"]
-	laptop, err := db.FindProductById(laptopID)
+	laptop, err := database.FindProductById(laptopID)
 	if err != nil {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
@@ -575,7 +551,7 @@ func handleDeleteProduct(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodDelete {
 		vars := mux.Vars(r)
 		laptopID := vars["id"]
-		err := db.DeleteProduct(laptopID)
+		err := database.DeleteProduct(laptopID)
 		if err != nil {
 			respondWithMessage(w, "Error with Delete Product")
 		}
@@ -589,7 +565,7 @@ func handleEditProduct(w http.ResponseWriter, r *http.Request) {
 	laptopID := vars["id"]
 
 	if r.Method == http.MethodGet {
-		laptop, err := db.FindProductById(laptopID)
+		laptop, err := database.FindProductById(laptopID)
 		if err != nil {
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			return
@@ -612,7 +588,7 @@ func handleEditProduct(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Обновление продукта в базе данных
-		err = db.UpdateProductInDB(id, brand, model, description, price)
+		err = database.UpdateProductInDB(id, brand, model, description, price)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("Error updating product: %v", err), http.StatusInternalServerError)
 			return
@@ -638,7 +614,7 @@ func addProdHandle(w http.ResponseWriter, r *http.Request) {
 			respondWithMessage(w, "Product is not added")
 			return
 		}
-		err = db.AddProduct(brand, model, description, price)
+		err = database.AddProduct(brand, model, description, price)
 		if err != nil {
 			respondWithMessage(w, "Product is not added")
 			return
@@ -653,8 +629,8 @@ func addProdHandle(w http.ResponseWriter, r *http.Request) {
 // Secret key for JWT signing
 var secretKey = []byte("SecretYouShouldHide")
 
-func getData(email string, username string, password string, token string, role string) db.User {
-	user := db.User{
+func getData(email string, username string, password string, token string, role string) models.User {
+	user := models.User{
 		ID:          primitive.NewObjectID(),
 		Email:       email,
 		Username:    username,
@@ -668,7 +644,7 @@ func getData(email string, username string, password string, token string, role 
 }
 
 var verificationCode string
-var newUser db.User
+var newUser models.User
 
 func registerHandler(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/register" {
@@ -689,7 +665,7 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	user, _ := db.FindUserByEmail(db.Client, r.FormValue("email"))
+	user, _ := database.FindUserByEmail(r.FormValue("email"))
 	if user != nil {
 		http.Redirect(w, r, "/logins", http.StatusSeeOther)
 	}
@@ -734,7 +710,7 @@ func verifyRole(next http.HandlerFunc) http.HandlerFunc {
 		token := cookie.Value
 
 		// Verify the token and retrieve user information
-		user, err := db.FindUserByToken(db.Client, token)
+		user, err := database.FindUserByToken(token)
 
 		if user.Role != "ADMIN" {
 			http.Redirect(w, r, "/error", http.StatusSeeOther)
@@ -760,7 +736,7 @@ func verifyToken(next http.HandlerFunc) http.HandlerFunc {
 		token := cookie.Value
 
 		// Verify the token and retrieve user information
-		user, err := db.FindUserByToken(db.Client, token)
+		user, err := database.FindUserByToken(token)
 		if err != nil {
 			http.Redirect(w, r, "/logins", http.StatusSeeOther)
 			return
@@ -803,7 +779,7 @@ func confirmVerificationCodeHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		fmt.Println(token)
 		newUser.AccessToken = token
-		err = db.InsertData(db.Client, newUser)
+		err = database.InsertData(newUser)
 		if err != nil {
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			return
@@ -842,7 +818,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := db.FindUserByEmail(db.Client, r.FormValue("email"))
+	user, err := database.FindUserByEmail(r.FormValue("email"))
 	if err != nil {
 		http.Error(w, "Unauthorized: Invalid credentials", http.StatusUnauthorized)
 		return
@@ -879,7 +855,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &newCookie2)
 
 	// Update user's access token in the database
-	if err := db.UpdateUserUsernameByEmail(db.Client, user.Email, "access_token", token); err != nil {
+	if err := database.UpdateUserUsernameByEmail(user.Email, "access_token", token); err != nil {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
@@ -919,7 +895,7 @@ func sendVerificationCode(email, code string) error {
 func sendMessageToAllEmails(subject string, info string) error {
 	// Set up the authentication credentials for the SMTP server
 	auth := smtp.PlainAuth("", os.Getenv("MAIL"), os.Getenv("SMTP_PASSWORD"), os.Getenv("SMTP_SERVER"))
-	emails, err := db.GetUserEmails(db.Client)
+	emails, err := database.GetUserEmails()
 	if err != nil {
 		return fmt.Errorf("failed to get user emails: %v", err)
 	}
@@ -964,37 +940,38 @@ func newsletterHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Print("sended success")
 }
-func generateJWT(password string, username string) (string, error) {
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"password": password,
-		"username": username,
-		"exp":      time.Now().Add(time.Hour * 1).Unix(), // Token expires in 1 hour
-	})
 
-	// Sign the token with the secret key
-	tokenString, err := token.SignedString(secretKey)
-	if err != nil {
-		return "", err
-	}
+// func generateJWT(password string, username string) (string, error) {
+// 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+// 		"password": password,
+// 		"username": username,
+// 		"exp":      time.Now().Add(time.Hour * 1).Unix(), // Token expires in 1 hour
+// 	})
 
-	return tokenString, nil
-}
+// 	// Sign the token with the secret key
+// 	tokenString, err := token.SignedString(secretKey)
+// 	if err != nil {
+// 		return "", err
+// 	}
+
+// 	return tokenString, nil
+// }
 
 type ShoppingCart struct {
-	Items []db.Laptop `json:"items"`
+	Items []models.Laptop `json:"items"`
 }
 
-// Handler for adding items to the shopping cart
+// Handler for adding items to the shopping
 func addToCartHandler(w http.ResponseWriter, r *http.Request) {
 	// Retrieve item details from request
 	vars := mux.Vars(r)
 	laptopID := vars["id"]
-	newItem, _ := db.FindProductById(laptopID)
+	newItem, _ := database.FindProductById(laptopID)
 
 	// Retrieve existing shopping cart from cookie or create a new one
 	cart := getCartFromCookie(r)
 
-	// Add the new item to the shopping cart
+	// Add the new item to the shopping d
 	cart.Items = append(cart.Items, newItem)
 
 	// Save the updated shopping cart to cookie
@@ -1024,7 +1001,7 @@ func getCartFromCookie(r *http.Request) ShoppingCart {
 	cartCookie, err := r.Cookie("shopping_cart")
 	if err != nil {
 		// If cookie doesn't exist, return an empty cart
-		return ShoppingCart{Items: []db.Laptop{}}
+		return ShoppingCart{Items: []models.Laptop{}}
 	}
 
 	var cart ShoppingCart
@@ -1135,7 +1112,7 @@ func addCommentHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
-		err = db.AddComment(username, text, laptopID)
+		err = database.AddComment(username, text, laptopID)
 	} else {
 		error404PageHandler(w, r)
 		return
@@ -1153,7 +1130,7 @@ func getCommentHandler(w http.ResponseWriter, r *http.Request) {
 	laptopID := params["id"]
 
 	// Получаем комментарии для указанного ноутбука
-	comments, err := db.GetCommentsByLaptop(laptopID)
+	comments, err := database.GetCommentsByLaptop(laptopID)
 	if err != nil {
 		http.Error(w, "Failed to get comments", http.StatusInternalServerError)
 		return
@@ -1172,21 +1149,21 @@ func getCommentHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(jsonResponse)
 }
 
-func verifyUser(r *http.Request) bool {
-	cookie, err := r.Cookie("token")
-	if err != nil {
-		return false
-	}
-	token := cookie.Value
-	user, err := db.FindUserByToken(db.Client, token)
-	if err != nil {
-		return false
-	}
-	if user == nil {
-		return false
-	}
-	return true
-}
+// func verifyUser(r *http.Request) bool {
+// 	cookie, err := r.Cookie("token")
+// 	if err != nil {
+// 		return false
+// 	}
+// 	token := cookie.Value
+// 	user, err := db.FindUserByToken(db.Client, token)
+// 	if err != nil {
+// 		return false
+// 	}
+// 	if user == nil {
+// 		return false
+// 	}
+// 	return true
+// }
 
 func accountHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
@@ -1201,7 +1178,7 @@ func accountHandler(w http.ResponseWriter, r *http.Request) {
 			fmt.Println("Error parsing HTML template:", err)
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		}
-		user, err := db.FindUserByToken(db.Client, token)
+		user, err := database.FindUserByToken(token)
 		if user.Role == "ADMIN" {
 			handleAdmin(w, r)
 			return
@@ -1225,7 +1202,7 @@ func editAccountHandler(w http.ResponseWriter, r *http.Request) {
 	username := r.Form.Get("username")
 	email := r.Form.Get("email")
 
-	err = db.UpdateAccount(id, username, email)
+	err = database.UpdateAccount(id, username, email)
 	if err != nil {
 		http.Error(w, "Failed to update account", http.StatusInternalServerError)
 		return
@@ -1249,63 +1226,4 @@ func logoutHandler(w http.ResponseWriter, r *http.Request) {
 	// Отправляем успешный ответ
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Logged out successfully"))
-}
-
-func recomInsert(recoms <-chan string, done chan<- bool) { //results chan<- int
-	for recom := range recoms {
-		fmt.Println(recom)
-		err := db.InsertRecom(recom)
-		if err != nil {
-			fmt.Println("Error with insert recom")
-		}
-		done <- true
-	}
-}
-
-func recHandler(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/recs" {
-		error404PageHandler(w, r)
-		return
-	}
-
-	if r.Method == http.MethodGet {
-		http.ServeFile(w, r, "public/recs.html")
-	} else {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-	}
-}
-func submitRecsHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodPost {
-		goroutines := 100
-
-		if err := r.ParseForm(); err != nil {
-			http.Error(w, "Failed to parse form data", http.StatusInternalServerError)
-			return
-		}
-		comments := r.Form["comment[]"]
-
-		fmt.Println("Start ------ Start")
-		done := make(chan bool)
-		recoms := make(chan string)
-
-		start := time.Now()
-		// var wg sync.WaitGroup
-		// wg.Add(recoms)
-
-		for w := 1; w <= goroutines; w++ {
-			go recomInsert(recoms, done)
-		}
-		for _, comment := range comments {
-			recoms <- comment
-		}
-		close(recoms)
-		for range comments {
-			<-done
-		}
-		elapsed := time.Since(start)
-		fmt.Printf("/////////////////////////////////\nExecution time: %s\n", elapsed)
-		fmt.Println("Recoms inserted")
-	} else {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-	}
 }
