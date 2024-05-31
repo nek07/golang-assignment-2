@@ -1021,12 +1021,21 @@ func saveCartToCookie(w http.ResponseWriter, cart ShoppingCart) {
 	})
 }
 func basketHandler(w http.ResponseWriter, r *http.Request) {
+	cookie, err := r.Cookie("token")
+	if err != nil {
+		return
+	}
+	token := cookie.Value
+	user, err := database.FindUserByToken(token)
+	if err != nil {
+		return
+	}
 	tmpl, err := template.ParseFiles("public/basket.html")
 	if err != nil {
 		fmt.Println("Error parsing HTML template:", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 	}
-	tmpl.Execute(w, "")
+	tmpl.Execute(w, user.ID.Hex())
 }
 
 // Handler for removing an item from the shopping cart

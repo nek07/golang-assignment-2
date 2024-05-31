@@ -24,7 +24,7 @@ func InsertMessage(cm models.ChatMessage) error {
 	return err
 }
 func InsertData(u models.User) error {
-	collection := Client.Database("go-assignment-2").Collection("users")data
+	collection := Client.Database("go-assignment-2").Collection("users")
 	// Insert user data into the MongoDB collection
 	insertResult, err := collection.InsertOne(context.TODO(), u)
 	if err != nil {

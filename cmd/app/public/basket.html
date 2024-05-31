@@ -21,7 +21,7 @@
 </head>
 
 <body>
-    
+
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark p-3">
         <div class="container-fluid">
 
@@ -47,8 +47,9 @@
                 </ul>
             </div>
         </div>
-        </nav>
+    </nav>
     <div class="container-fluid main mt-5 mb-5">
+        <div id="customerID" style="display: none;">{{.}}</div>
         <div class="card">
             <div class="row">
                 <div class="col-md-8 cart" id="cart">
@@ -68,27 +69,39 @@
                 <div class="col-md-4 summary" id="summary">
                     <div>
                         <h5><b>Summary</b></h5>
+                        <h5 style="color: white;"><b>STATUS - <span id="paymentStatus">not corfirmed</span></b></h5>
                     </div>
                     <hr>
                     <form>
                         <p>NAME</p>
-                        <input name="name" id="name" type="text" placeholder="DamirXGoD" required>
-                        <p>PHONE NUMBER</p>
-                        <input id="phoneNumber" name="phoneNumber" placeholder="Enter your phone number" type="tel"
-                            required>
-                        <p>START-END DATE</p>
-                        <input type="text" name="daterange" data-bs-theme="dark" id="daterange" onchange="setTotal()" />
+                        <input name="name" id="name" type="text" placeholder="Dosyan" required>
+                        <p>Email</p>
+                        <input id="email" name="email" placeholder="Enter your Email" type="email" required>
+                        <div id="card-form" style="display: none;">
+                            <h5><b>Card information</b></h5>
+                            <p>Card Number</p>
+                            <input name="cardNumber" id="cardNumber" type="text" placeholder="0000 0000 0000 0000"
+                                required>
+                            <p>Expration Date</p>
+                            <input name="exprationDate" id="exprationDate" type="text" placeholder="16/25" required>
+                            <p>CVV</p>
+                            <input name="cvv" id="cvv" type="text" placeholder="600" required>
+                            <p>Name on Card</p>
+                            <input name="cardName" id="cardName" type="text" placeholder="ASAINOV DAMIR" required>
+                            <p>Address</p>
+                            <input name="address" id="address" type="text" placeholder="Alikhana Bokeihana 25g"
+                                required>
+                        </div>
+
+
+
 
                     </form>
                     <div class="row" style="border-top: 1px solid rgba(255,255,255,.7); padding: 2vh 0;">
-                        <div class="col-6">DAYS</div>
-                        <div class="col text-right" id="totalDays"></div>
-                        <div class="col-12"></div>
-                        <div class="col-6">TOTAL PRICE</div>
-                        <div class="col text-right"><span id="totalPrice"></span> ₸</div>
                     </div>
-
-                    <button class="btn order" onclick="createOrder()" id="order">ORDER</button>
+                    <button class="btn order" onclick="insertCart()" id="confirm">CONFIRM</button>
+                    <button class="btn order" onclick="insertTransaction()" id="order">ORDER</button>
+                    <button class="btn order" onclick="back()" id="clear">BACK</button>
                     <div id="status"></div>
                 </div>
             </div>
@@ -100,6 +113,7 @@
 
     <!-- Ваши скрипты -->
     <script>
+        const cardItems = [];
         function loadCart() {
             fetch("/view-cart")
                 .then(response => response.json())
@@ -107,10 +121,11 @@
                     // Отобразить содержимое корзины на странице
                     const cartContainer = document.querySelector("#cart .border-top");
                     cartContainer.innerHTML = "";
+
                     for (const itemId in data.items) {
                         const item = data.items[itemId];
                         const itemElement = document.createElement("div");
-                        itemElement.classList.add("row", "main", "align-items-center");
+                        itemElement.classList.add("row", "main", "align-items-center", "item");
                         itemElement.innerHTML = `
                             <div class="eqID" style="display: none">${item.ID}</div>
                             <a href="/product/${item.ID}" class="col">
@@ -119,9 +134,13 @@
                             </a>
                             <div class="col">₸ <span class="price">${item.Price}</span> <a onclick=""></a></div>
                             <span class="close col" onclick="deleteEquipFromCart('${item.ID}')" style="color: #E14D2A"> &#10005;</span>
-
                         `;
                         cartContainer.appendChild(itemElement);
+                        cardItems.push({
+                            ItemID: item.ID.toString(),
+                            Name: item.Brand + " " + item.Model,
+                            Price: item.Price.toString()
+                        });
                     }
                 })
                 .catch(error => console.error('Error:', error));
@@ -141,14 +160,170 @@
                 })
                 .catch(error => console.error('Error:', error));
         }
+        function back() {
+            let id = document.getElementById("customerID").innerHTML;
+            fetch("http://localhost:9000/deleteCart?customerID=" + id, {
+                method: 'DELETE'
+            })
+                .then(response => {
+                    if (response.ok) {
+                        console.log("Cart deleted successfully");
+                    } else {
+                        console.error('Error:', response.statusText);
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            location.reload()
+        }
+        function insertTransaction() {
+            insertPaymentForm()
+            let id = document.getElementById("customerID").innerHTML;   
+            fetch("http://localhost:9000/insertTransaction?customerID=" + id, {
+                method: 'POST',
+            })
+                .then(response => {
+                    if (response.ok) {
 
-        function createOrder() {
-            // Ваши действия при создании заказа
+                        console.log("Transaction successfully");
+                    } else {
+                        console.error('Error:', response.statusText);
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        }
+        function insertPaymentForm(){
+            let id = document.getElementById("customerID").innerHTML;   
+            fetch("http://localhost:9000/insertPaymentForm", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    "UserID": id,
+                    "CardNumber": document.getElementById("cardNumber").value,
+                    "Cvv": document.getElementById("cvv").value,
+                    "Address": document.getElementById("address").value ,
+                    "ExpirationDate": document.getElementById("exprationDate").value,
+                    "Name": document.getElementById("cardName").value
+                })
+            })
+                .then(response => {
+                    if (response.ok) {
+
+                        console.log("Payment form  inserted successfully");
+                    } else {
+                        console.error('Error:', response.statusText);
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+                location.reload()
+        }
+        function loadCartPaymentInfo() {
+            let id = document.getElementById("customerID").innerHTML;
+            fetch("http://localhost:9000/findPaymentForm?userID=" + 52, {
+                method: 'GET'
+            })
+                .then(response => {
+                    if (response.ok) {
+                        return response.json(); // Преобразование тела ответа в формат JSON
+                    } else {
+                        console.error('Error:', response.statusText);
+                    }
+                })
+                .then(data => {
+                    document.getElementById("cardNumber").value = data.CardNumber
+                    document.getElementById("cvv").value = data.Cvv
+                    document.getElementById("address").value = data.Address
+                    document.getElementById("exprationDate").value = data.ExpirationDate
+                    document.getElementById("cardName").value = data.Name;
+                })
+                .catch(error => console.error('Error:', error));
+        }
+        function loadFromApi() {
+            loadCartPaymentInfo()
+            document.getElementById("order").style.display = "none";
+            document.getElementById("confirm").style.display = "block";
+            document.getElementById("clear").style.display = "none";
+            let id = document.getElementById("customerID").innerHTML;
+            fetch("http://localhost:9000/findCart?customerID=" + id, {
+                method: 'GET'
+            })
+                .then(response => {
+                    if (response.ok) {
+                        return response.json(); // Преобразование тела ответа в формат JSON
+                    } else {
+                        console.error('Error:', response.statusText);
+                    }
+                })
+                .then(data => {
+                    // Обработка полученных данных
+                    console.log(data);
+                    document.getElementById("paymentStatus").innerHTML = data.Status
+                    document.getElementById("name").value = data.Customer.Name;
+                    document.getElementById("email").value = data.Customer.Email;
+                    if (data.Status == "not paid") {
+                        document.getElementById("confirm").style.display = "none";
+                        document.getElementById("order").style.display = "block";
+                        document.getElementById("clear").style.display = "block";
+                        document.getElementById("card-form").style.display = "block";
+                    } else if (data.Status == "paid") {
+                        document.getElementById("confirm").style.display = "none";
+                        document.getElementById("order").style.display = "none";
+                        document.getElementById("clear").style.display = "block";
+                        document.getElementById("card-form").style.display = "none";
+
+                    } else {
+                        document.getElementById("order").style.display = "none";
+                        document.getElementById("confirm").style.display = "block";
+                        document.getElementById("clear").style.display = "none";
+                        document.getElementById("card-form").style.display = "none";
+
+                    }
+
+                })
+                .catch(error => console.error('Error:', error));
         }
 
+        function insertCart() {
+            let id = document.getElementById("customerID").innerHTML;
+            fetch("http://localhost:9000/insertCart", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    "Customer": {
+                        "CustomerID": id,
+                        "Name": document.getElementById("name").value,
+                        "Email": document.getElementById("email").value
+                    },
+                    "CartItems": cardItems
+                })
+            })
+                .then(response => {
+                    if (response.ok) {
+
+                        console.log("Cart inserted successfully");
+                    } else {
+                        console.error('Error:', response.statusText);
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            location.reload()
+        }
+        function hideCloseButtons(displayStyle) {
+            const closeButtons = document.querySelectorAll('.close');
+            closeButtons.forEach(button => {
+                button.style.display = displayStyle;
+            });
+        }
         // Загрузка корзины при загрузке страницы
         loadCart();
+        loadFromApi();
+        console.log(cardItems);
+        hideCloseButtons("none");
     </script>
+
 </body>
 
 </html>
